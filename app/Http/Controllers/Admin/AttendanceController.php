@@ -1,31 +1,35 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\AttendancePoint;
 use App\Models\AttendanceRecord;
 use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\TelegramService;
+use Illuminate\Support\Facades\Log;
+
 
 class AttendanceController extends Controller
 {
-    public function show($token)
+    public function login($token)
     {
         $attendancePoint = AttendancePoint::where('qr_token', $token)
             ->where('status', 'active')
             ->firstOrFail();
 
-        return view('attendance.show', compact('attendancePoint'));
+        return view('attendance.login', compact('attendancePoint'));
     }
 
     public function submit(Request $request, $token)
     {
         $request->validate([
             'employee_code' => ['required', 'string'],
-            'pin'           => ['required', 'digits:4'],
-            'latitude'      => ['required', 'numeric'],
-            'longitude'     => ['required', 'numeric'],
+            'pin' => ['required', 'digits:4'],
+            'latitude' => ['required', 'numeric'],
+            'longitude' => ['required', 'numeric'],
         ]);
 
         // ✅ GPS Check
@@ -74,29 +78,92 @@ class AttendanceController extends Controller
             }
 
             AttendanceRecord::create([
-                'employee_id'         => $employee->id,
+                'employee_id' => $employee->id,
                 'attendance_point_id' => $attendancePoint->id,
-                'attendance_date'     => $today,
-                'check_in_time'       => $currentTime,
-                'status'              => $status,
-                'late_minutes'        => $lateMinutes,
-                'note'                => 'Check-in recorded',
+                'attendance_date' => $today,
+                'check_in_time' => $currentTime,
+                'status' => $status,
+                'late_minutes' => $lateMinutes,
+                'note' => 'Check-in recorded',
             ]);
 
-            return back()->with('success', 'Check-in successful for ' . $employee->full_name . '.');
+            try {
+                (new TelegramService())->send(
+                    "✅ CHECK IN\n\n" .
+                    "👤 Employee: {$employee->full_name}\n" .
+                    "🆔 Code: {$employee->employee_code}\n" .
+                    "📅 Date: {$today}\n" .
+                    "⏰ Check In: {$currentTime}\n" .
+                    "📌 Status: {$status}\n" .
+                    "⌛ Late: {$lateMinutes} minutes"
+                );
+            } catch (\Exception $e) {
+                Log::error('Telegram Error: ' . $e->getMessage());
+            }
+
+            // return back()->with('success', 'Check-in successful for ' . $employee->full_name . '.');
+             return redirect()->route('attendance.scan');
         }
 
         if ($attendance->check_in_time && !$attendance->check_out_time) {
+
             $attendance->update([
-                'check_out_time'      => $currentTime,
+                'check_out_time' => $currentTime,
                 'attendance_point_id' => $attendancePoint->id,
-                'note'                => 'Check-out recorded',
+                'note' => 'Check-out recorded',
             ]);
+
+            try {
+                (new TelegramService())->send(
+                    "🔴 CHECK OUT\n\n" .
+                    "👤 Employee: {$employee->full_name}\n" .
+                    "🆔 Code: {$employee->employee_code}\n" .
+                    "📅 Date: {$today}\n" .
+                    "⏰ Check Out: {$currentTime}"
+                );
+            } catch (\Exception $e) {
+                Log::error('Telegram Error: ' . $e->getMessage());
+            }
 
             return back()->with('success', 'Check-out successful for ' . $employee->full_name . '.');
         }
 
         return back()->with('error', 'Attendance already completed for today.');
+
+    }
+    public function scan()
+    {
+        return view('attendance.scan');
+    }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'qr_token' => 'required'
+        ]);
+
+        $point = AttendancePoint::where(
+            'qr_token',
+            $request->qr_token
+        )->first();
+
+        if (!$point) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid QR Code'
+            ]);
+        }
+
+        Attendance::create([
+            'employee_id' => session('employee_id'),
+            'attendance_point_id' => $point->id,
+            'attendance_date' => now()->toDateString(),
+            'check_time' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Attendance recorded successfully'
+        ]);
     }
 
     // ✅ GPS Distance Calculator
@@ -104,7 +171,7 @@ class AttendanceController extends Controller
     {
         $officeLat = (float) env('OFFICE_LATITUDE');
         $officeLng = (float) env('OFFICE_LONGITUDE');
-        $maxMeters = (int)   env('OFFICE_RADIUS_METERS', 100);
+        $maxMeters = (int) env('OFFICE_RADIUS_METERS', 100);
 
         $earthRadius = 6371000; // meters
 
@@ -112,11 +179,12 @@ class AttendanceController extends Controller
         $lngDiff = deg2rad($lng - $officeLng);
 
         $a = sin($latDiff / 2) ** 2 +
-             cos(deg2rad($officeLat)) * cos(deg2rad($lat)) *
-             sin($lngDiff / 2) ** 2;
+            cos(deg2rad($officeLat)) * cos(deg2rad($lat)) *
+            sin($lngDiff / 2) ** 2;
 
         $distance = $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $distance <= $maxMeters;
     }
+
 }

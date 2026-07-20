@@ -27,31 +27,45 @@ class EmployeeController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'employee_code' => ['required', 'string', 'max:255', 'unique:employees,employee_code'],
-            'full_name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:employees,email'],
-            'pin' => ['required', 'digits:4'],
-            'department_id' => ['required', 'exists:departments,id'],
-            'shift_id' => ['required', 'exists:shifts,id'],
-            'position' => ['nullable', 'string', 'max:255'],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'status' => ['required', 'in:active,inactive'],
+{
+    $validated = $request->validate([
+        'employee_code' => ['required', 'string', 'max:255', 'unique:employees,employee_code'],
+        'full_name' => ['required', 'string', 'max:255'],
+        'phone' => ['nullable', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+        'pin' => ['required', 'digits:4'],
+        'department_id' => ['required', 'exists:departments,id'],
+        'shift_id' => ['required', 'exists:shifts,id'],
+        'position' => ['nullable', 'string', 'max:255'],
+        'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        'status' => ['required', 'in:active,inactive'],
+    ]);
+
+    DB::transaction(function () use ($request, $validated) {
+
+        $user = User::create([
+            'name' => $validated['full_name'],
+            'email' => $validated['email'],
+            'password' => Hash::make('12345678'),
+            'role' => 'employee',
         ]);
 
-        $validated['pin'] = bcrypt($validated['pin']);
+        $employee = $validated;
+
+        $employee['user_id'] = $user->id;
+        $employee['pin'] = bcrypt($employee['pin']);
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('employees', 'public');
+            $employee['photo'] = $request->file('photo')->store('employees', 'public');
         }
 
-        Employee::create($validated);
+        Employee::create($employee);
+    });
 
-        return redirect()->route('admin.employees.index')
-            ->with('success', 'Employee created successfully.');
-    }
+    return redirect()
+        ->route('admin.employees.index')
+        ->with('success', 'Employee created successfully.');
+}
     public function show(Request $request, Employee $employee)
     {
         $employee->load(['department', 'shift']);
