@@ -1,47 +1,103 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.auth')
 
-    <form method="POST" action="{{ route('login') }}">
+@section('title', 'Sign In')
+
+@section('content')
+    <div class="auth-card-header">
+        <h1>Welcome back</h1>
+        <p>Sign in to continue to your attendance dashboard.</p>
+    </div>
+
+    @if (session('status'))
+        <div class="alert alert-success auth-alert mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger auth-alert mb-4" role="alert">
+            <i class="fas fa-circle-exclamation me-2"></i>
+            @foreach ($errors->all() as $error)
+                {{ $error }}@if (!$loop->last)<br>@endif
+            @endforeach
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" novalidate>
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-group auth-input-group border">
+                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    class="form-control @error('email') is-invalid @enderror"
+                    value="{{ old('email') }}"
+                    required
+                    autofocus
+                    autocomplete="username"
+                    placeholder="you@company.com"
+                >
+            </div>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="mb-2">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group auth-input-group border">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    class="form-control @error('password') is-invalid @enderror"
+                    required
+                    autocomplete="current-password"
+                    placeholder="••••••••"
+                >
+                <span class="input-group-text toggle-password" id="togglePassword">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        <div class="d-flex align-items-center justify-content-between mb-4 mt-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                <label class="form-check-label" for="remember" style="font-size: 14px; color: var(--text-soft);">
+                    Remember me
+                </label>
+            </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a href="{{ route('password.request') }}" style="font-size: 14px; color: var(--brand-primary); text-decoration: none; font-weight: 600;">
+                    Forgot password?
                 </a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        <button type="submit" class="btn btn-brand w-100 text-white py-2">
+            <i class="fas fa-right-to-bracket me-2"></i>Sign In
+        </button>
     </form>
-</x-guest-layout>
+
+    <div class="auth-card-footer">
+        &copy; {{ date('Y') }} PizzaHappyFamily Attendance System
+    </div>
+@endsection
+
+@push('scripts')
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const input = document.getElementById('password');
+            const icon = this.querySelector('i');
+            const isHidden = input.type === 'password';
+
+            input.type = isHidden ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
+    </script>
+@endpush

@@ -28,6 +28,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        if ($token = $request->session()->pull('attendance_intended_token')) {
+            return redirect()->route('attendance.show', $token);
+        }
+
         if (auth()->user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }

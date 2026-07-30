@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\AttendancePointController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AttendanceController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Employee\EmployeeDashboardController;
 use App\Http\Controllers\Employee\EmployeeAttendanceController;
 use App\Http\Controllers\Employee\EmployeeProfileController;

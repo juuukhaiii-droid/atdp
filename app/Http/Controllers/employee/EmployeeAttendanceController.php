@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\AttendancePoint;
 use App\Services\OfficeNetworkChecker;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
@@ -83,6 +84,21 @@ class EmployeeAttendanceController extends Controller
     }
 
     /**
+     * GET /employee/attendance/history
+     */
+    public function history(Request $request)
+    {
+        $records = Attendance::with('attendancePoint')
+            ->where('user_id', Auth::id())
+            ->latest('scanned_at')
+            ->paginate(15);
+
+        return view('employee.attendance.history', [
+            'records' => $records,
+        ]);
+    }
+
+    /**
      * GET /employee/attendance/success
      */
     public function success(Request $request)
@@ -114,12 +130,58 @@ class EmployeeAttendanceController extends Controller
     {
         return view('employee.attendance.scan');
     }
+
+    /**
+     * GET /attendance/{token}
+     * Landing page when an employee scans the physical QR code with
+     * their phone camera. Not behind auth middleware because a scan
+     * can arrive from a logged-out session — we bounce those to login
+     * and bring them right back here afterwards.
+     */
+    public function login(Request $request, $token)
+    {
+        $attendancePoint = AttendancePoint::where('qr_token', $token)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$attendancePoint) {
+            abort(404, 'Invalid or inactive QR code.');
+        }
+
+        if (!Auth::check()) {
+            session(['attendance_intended_token' => $token]);
+
+            return redirect()->route('login')
+                ->withErrors(['login' => 'Please log in to record your attendance.']);
+        }
+
+        $lastToday = Attendance::where('user_id', Auth::id())
+            ->whereDate('scanned_at', now()->toDateString())
+            ->latest('scanned_at')
+            ->first();
+
+        $nextAction = $lastToday?->type === 'in' ? 'out' : 'in';
+
+        return view('employee.attendance.confirm', [
+            'attendancePoint' => $attendancePoint,
+            'token' => $token,
+            'nextAction' => $nextAction,
+        ]);
+    }
+
     public function submit(
         Request $request,
         $token,
         OfficeNetworkChecker $checker,
         TelegramService $telegram
     ) {
+        if (!Auth::check()) {
+            session(['attendance_intended_token' => $token]);
+
+            return redirect()->route('login')
+                ->withErrors(['login' => 'Please log in to record your attendance.']);
+        }
+
         // Verify office network
         if (!$checker->passes($request->ip())) {
             return redirect()
@@ -129,7 +191,7 @@ class EmployeeAttendanceController extends Controller
                 ]);
         }
 
-  $attendancePoint = AttendancePoint::where('token', $token)->first();
+        $attendancePoint = AttendancePoint::where('qr_token', $token)->first();
 
         if (!$attendancePoint) {
             return redirect()
