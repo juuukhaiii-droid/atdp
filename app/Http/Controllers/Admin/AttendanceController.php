@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use App\Models\AttendancePoint;
 use App\Models\AttendanceRecord;
 use App\Models\Employee;
