@@ -233,7 +233,7 @@
             <div class="app-bar-sub">{{ now()->format('l, d M Y') }}</div>
         </div>
         <div class="app-bar-actions">
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <button type="submit" class="app-bar-icon-btn" title="Logout">
                     <i class="fas fa-arrow-right-from-bracket"></i>
