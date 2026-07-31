@@ -85,7 +85,7 @@
                             <input type="file" name="photo" class="form-control form-control-lg rounded-3" accept="image/*">
                             @if($employee->photo)
                                 <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $employee->photo) }}" alt="Employee Photo" width="90"
+                                    <img src="{{ asset('files/' . $employee->photo) }}" alt="Employee Photo" width="90"
                                         class="rounded-3 border">
                                 </div>
                             @endif

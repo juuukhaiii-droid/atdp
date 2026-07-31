@@ -64,7 +64,7 @@ class AttendancePointController extends Controller
         );
 
         $attendancePoint->update([
-            'qr_image' => 'storage/qrcodes/' . $filename
+            'qr_image' => 'files/qrcodes/' . $filename
         ]);
 
         return redirect()->route('admin.attendance-points.index')

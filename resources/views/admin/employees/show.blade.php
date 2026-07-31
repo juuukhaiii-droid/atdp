@@ -29,7 +29,7 @@
                     <div class="text-center mb-4">
                         @if($employee->photo)
                             <img
-                                src="{{ asset('storage/' . $employee->photo) }}"
+                                src="{{ asset('files/' . $employee->photo) }}"
                                 alt="Employee Photo"
                                 class="employee-profile-img">
                         @else

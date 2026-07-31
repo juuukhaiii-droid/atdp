@@ -8,7 +8,7 @@
         <div class="app-card profile-hero mb-3">
             <div class="card-body text-center">
                 @if ($employee->photo)
-                    <img src="{{ asset('storage/' . $employee->photo) }}" alt="Profile Photo" class="profile-avatar">
+                    <img src="{{ asset('files/' . $employee->photo) }}" alt="Profile Photo" class="profile-avatar">
                 @else
                     <div class="profile-avatar profile-avatar-placeholder">
                         <i class="fas fa-user"></i>

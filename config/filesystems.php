@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/files',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -74,7 +74,11 @@ return [
     */
 
     'links' => [
-        public_path('storage') => storage_path('app/public'),
+        // Named "files" instead of the conventional "storage" - some hosts
+        // (Hostinger's edge included) blanket-block any /storage/* URL as a
+        // Laravel-hardening default, even though public/storage is the safe,
+        // intentionally-public half of it.
+        public_path('files') => storage_path('app/public'),
     ],
 
 ];
