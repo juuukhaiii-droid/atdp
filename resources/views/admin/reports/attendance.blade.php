@@ -12,7 +12,7 @@
             Report Filters
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.reports.attendance') }}">
+            <form method="GET" action="{{ route('admin.attendance.history') }}">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Employee</label>
@@ -44,7 +44,7 @@
 
                 <div class="mt-4 d-flex gap-2">
                     <button class="btn btn-primary px-4 py-2 rounded-3 fw-semibold">Filter</button>
-                    <a href="{{ route('admin.reports.attendance') }}" class="btn btn-light border px-4 py-2 rounded-3 fw-semibold">Reset</a>
+                    <a href="{{ route('admin.attendance.history') }}" class="btn btn-light border px-4 py-2 rounded-3 fw-semibold">Reset</a>
                 </div>
             </form>
         </div>

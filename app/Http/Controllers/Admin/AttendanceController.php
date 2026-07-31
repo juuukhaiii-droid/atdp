@@ -15,6 +15,38 @@ use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = AttendanceRecord::with(['employee.department']);
+
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', $request->employee_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('attendance_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('attendance_date', '<=', $request->date_to);
+        }
+
+        $records = $query->latest('attendance_date')->paginate(20)->withQueryString();
+
+        return view('admin.attendances.index', compact('records'));
+    }
+
+    public function show(AttendanceRecord $attendance)
+    {
+        $attendance->load(['employee.department', 'employee.shift']);
+
+        return view('admin.attendances.show', compact('attendance'));
+    }
+
     public function login($token)
     {
         $attendancePoint = AttendancePoint::where('qr_token', $token)
