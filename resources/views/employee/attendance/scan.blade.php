@@ -19,7 +19,8 @@
         <div class="card-body">
             <div class="scan-hint">
                 <i class="fas fa-circle-info me-2"></i>
-                Point your camera at the attendance QR code at your location. Make sure you're connected to office WiFi before scanning.
+                សូមដាក់ឲ្យចំ QR Code 
+                សូមប្រាកដថាលោកអ្នកបានប្រើប្រាស់ WIFI ក្រុមហ៊ុន។
             </div>
         </div>
     </div>

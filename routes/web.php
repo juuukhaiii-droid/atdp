@@ -18,6 +18,23 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// TEMPORARY: no SSH/artisan access on this host. Visit once after deploy to
+// link storage and run pending migrations, then this route gets removed.
+Route::get('/admin/system/run-deploy-tasks', function () {
+    $output = [];
+
+    $output[] = '$ php artisan storage:link';
+    \Illuminate\Support\Facades\Artisan::call('storage:link');
+    $output[] = trim(\Illuminate\Support\Facades\Artisan::output()) ?: '(no output)';
+
+    $output[] = '';
+    $output[] = '$ php artisan migrate --force';
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    $output[] = trim(\Illuminate\Support\Facades\Artisan::output()) ?: '(no output)';
+
+    return response('<pre>' . e(implode("\n", $output)) . '</pre>');
+})->middleware(['auth', 'role:admin']);
+
 require __DIR__ . '/auth.php';
 
 
