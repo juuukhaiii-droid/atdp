@@ -39,7 +39,7 @@
                     required
                     autofocus
                     autocomplete="username"
-                    placeholder="you@company.com"
+                    placeholder="user1@gmail.com"
                 >
             </div>
         </div>
