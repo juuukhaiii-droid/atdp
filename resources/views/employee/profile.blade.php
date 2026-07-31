@@ -1,122 +1,165 @@
-@extends('layouts.app')
+@extends('layouts.employee-app')
+
+@section('title', 'Profile')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12 col-md-8 mx-auto">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-user-circle me-2"></i> My Profile
-                    </h4>
+
+    @if ($employee)
+        <div class="app-card profile-hero mb-3">
+            <div class="card-body text-center">
+                @if ($employee->photo)
+                    <img src="{{ asset('storage/' . $employee->photo) }}" alt="Profile Photo" class="profile-avatar">
+                @else
+                    <div class="profile-avatar profile-avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                @endif
+
+                <div class="profile-name">{{ $employee->full_name }}</div>
+                <div class="profile-code">{{ $employee->employee_code }}</div>
+
+                @if ($employee->status === 'active')
+                    <span class="status-pill status-pill-done mt-2"><i class="fas fa-check me-1"></i>Active</span>
+                @else
+                    <span class="status-pill status-pill-idle mt-2"><i class="fas fa-pause me-1"></i>Inactive</span>
+                @endif
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-top:0;">Contact</div>
+        <div class="app-card mb-3">
+            <div class="card-body p-0">
+                <div class="profile-row">
+                    <i class="fas fa-envelope profile-row-icon"></i>
+                    <div>
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ $employee->email ?? 'N/A' }}</div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    @if ($employee)
-                        <div class="row">
-                            <div class="col-md-4 text-center mb-4">
-                                @if ($employee->photo)
-                                    <img src="{{ asset('storage/' . $employee->photo) }}"
-                                         alt="Profile Photo"
-                                         class="img-fluid rounded-circle"
-                                         style="max-width: 200px;">
-                                @else
-                                    <div class="avatar-placeholder bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
-                                         style="width: 200px; height: 200px;">
-                                        <i class="fas fa-user" style="font-size: 4rem; color: #999;"></i>
-                                    </div>
-                                @endif
+                <div class="profile-row profile-row-border-top">
+                    <i class="fas fa-phone profile-row-icon"></i>
+                    <div>
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">{{ $employee->phone ?? 'N/A' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Work Info</div>
+        <div class="app-card mb-3">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="info-label">Department</div>
+                        <div class="info-value">{{ $employee->department->name ?? 'N/A' }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">Position</div>
+                        <div class="info-value">{{ $employee->position ?? 'N/A' }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">Shift</div>
+                        <div class="info-value">{{ $employee->shift->name ?? 'N/A' }}</div>
+                    </div>
+                    @if ($employee->shift)
+                        <div class="col-6">
+                            <div class="info-label">Work Time</div>
+                            <div class="info-value">
+                                {{ \Carbon\Carbon::parse($employee->shift->start_time)->format('h:i A') }} -
+                                {{ \Carbon\Carbon::parse($employee->shift->end_time)->format('h:i A') }}
                             </div>
-
-                            <div class="col-md-8">
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Full Name</label>
-                                        <p class="h5 fw-bold">{{ $employee->full_name }}</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Employee Code</label>
-                                        <p class="h5 fw-bold code-pill">{{ $employee->employee_code }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Email</label>
-                                        <p class="mb-0">
-                                            <a href="mailto:{{ $employee->email }}">{{ $employee->email ?? 'N/A' }}</a>
-                                        </p>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Phone</label>
-                                        <p class="mb-0">
-                                            <a href="tel:{{ $employee->phone }}">{{ $employee->phone ?? 'N/A' }}</a>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Department</label>
-                                        <p class="mb-0 fw-bold">{{ $employee->department->name ?? 'N/A' }}</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Position</label>
-                                        <p class="mb-0 fw-bold">{{ $employee->position ?? 'N/A' }}</p>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Shift</label>
-                                        <p class="mb-0 fw-bold">{{ $employee->shift->name ?? 'N/A' }}</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label text-muted small">Status</label>
-                                        <p class="mb-0">
-                                            @if ($employee->status === 'active')
-                                                <span class="badge bg-success">Active</span>
-                                            @else
-                                                <span class="badge bg-danger">Inactive</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-
-                                @if ($employee->shift)
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <label class="form-label text-muted small">Work Time</label>
-                                            <p class="mb-0">
-                                                {{ \Carbon\Carbon::parse($employee->shift->start_time)->format('H:i') }} -
-                                                {{ \Carbon\Carbon::parse($employee->shift->end_time)->format('H:i') }}
-                                            </p>
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label text-muted small">Late After</label>
-                                            <p class="mb-0">{{ \Carbon\Carbon::parse($employee->shift->late_after)->format('H:i') }}</p>
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <div class="row">
-                            <div class="col-12">
-                                <a href="{{ route('employee.dashboard') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
-                                </a>
-                            </div>
-                        </div>
-                    @else
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Employee record not found.
                         </div>
                     @endif
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    @else
+        <div class="app-card">
+            <div class="card-body text-center text-muted py-4">
+                <i class="fas fa-triangle-exclamation mb-2" style="font-size:1.5rem;"></i>
+                <div>Employee record not found.</div>
+            </div>
+        </div>
+    @endif
+
+@endsection
+
+@push('styles')
+<style>
+    .profile-hero { background: linear-gradient(160deg, #ffffff 0%, #fef7f7 100%); }
+
+    .profile-avatar {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 12px;
+    }
+
+    .profile-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        color: #94a3b8;
+        font-size: 2.2rem;
+    }
+
+    .profile-name {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .profile-code {
+        font-size: 12.5px;
+        color: var(--text-soft);
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 11px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 700;
+    }
+
+    .status-pill-done { background: #dcfce7; color: #166534; }
+    .status-pill-idle { background: #f1f5f9; color: #64748b; }
+
+    .profile-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+    }
+
+    .profile-row-border-top { border-top: 1px solid var(--border-soft); }
+
+    .profile-row-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: var(--brand-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .info-label {
+        font-size: 11.5px;
+        color: var(--text-soft);
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .info-value { font-weight: 700; font-size: 14px; }
+</style>
+@endpush

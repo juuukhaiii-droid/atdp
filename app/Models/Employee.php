@@ -19,6 +19,7 @@ class Employee extends Model
         'position',
         'photo',
         'status',
+        'user_id',
     ];
 
     protected $hidden = ['pin'];

@@ -3,39 +3,65 @@
 namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
 use Illuminate\Support\Facades\Auth;
-use App\Models\AttendanceRecord as Attendance;
 
 class EmployeeDashboardController extends Controller
 {
     public function index()
     {
-        $employee = Auth::user()->employee;
+        $user = Auth::user();
+        $employee = $user->employee;
 
         if (!$employee) {
             abort(403, 'Employee record not found for this user.');
         }
 
-        $todayAttendance = Attendance::where('employee_id', $employee->id)
-            ->whereDate('created_at', today())
+        $todayIn = Attendance::where('user_id', $user->id)
+            ->where('type', 'in')
+            ->whereDate('scanned_at', today())
+            ->oldest('scanned_at')
             ->first();
 
-        $totalAttendance = Attendance::where('employee_id', $employee->id)->count();
+        $todayOut = Attendance::where('user_id', $user->id)
+            ->where('type', 'out')
+            ->whereDate('scanned_at', today())
+            ->latest('scanned_at')
+            ->first();
 
-        $presentDays = Attendance::where('employee_id', $employee->id)
-            ->whereMonth('created_at', now()->month)
+        $totalAttendance = Attendance::where('user_id', $user->id)
+            ->where('type', 'in')
             ->count();
 
-        $lateDays = Attendance::where('employee_id', $employee->id)
-            ->where('status', 'late')
-            ->whereMonth('created_at', now()->month)
-            ->count();
+        $monthlyIns = Attendance::where('user_id', $user->id)
+            ->where('type', 'in')
+            ->whereYear('scanned_at', now()->year)
+            ->whereMonth('scanned_at', now()->month)
+            ->orderBy('scanned_at')
+            ->get()
+            ->unique(fn ($record) => $record->scanned_at->toDateString());
+
+        $presentDays = $monthlyIns->count();
+
+        $lateAfter = $employee->shift?->late_after;
+        $lateDays = $lateAfter
+            ? $monthlyIns->filter(fn ($record) => $record->scanned_at->format('H:i:s') > $lateAfter)->count()
+            : 0;
+
+        $recentActivity = Attendance::with('attendancePoint')
+            ->where('user_id', $user->id)
+            ->latest('scanned_at')
+            ->take(5)
+            ->get();
 
         return view('employee.dashboard', compact(
-            'todayAttendance',
+            'employee',
+            'todayIn',
+            'todayOut',
             'totalAttendance',
             'presentDays',
-            'lateDays'
+            'lateDays',
+            'recentActivity'
         ));
     }
 }
