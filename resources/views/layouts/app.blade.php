@@ -397,7 +397,7 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <a class="navbar-brand brand-title mb-0" href="{{ route('admin.dashboard') }}" title="Home">
-                    <i class="fas fa-store me-2"></i>ភីហ្សា គ្រួសាររីករាយ
+                    ភីហ្សា គ្រួសាររីករាយ
                 </a>
             </div>
 
