@@ -1,11 +1,11 @@
 @extends('layouts.auth')
 
-@section('title', 'Sign In')
+@section('title', 'ចូលប្រើប្រាស់')
 
 @section('content')
     <div class="auth-card-header">
-        <h1>Welcome back</h1>
-        <p>Sign in to continue to your attendance dashboard.</p>
+        <h1>ភីហ្សា គ្រួសាររីករាយ</h1>
+        <p>សូមធ្វើការបំពេញព័ត៌មានខាងក្រោម.</p>
     </div>
 
     @if (session('status'))
