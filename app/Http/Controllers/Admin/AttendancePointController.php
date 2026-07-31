@@ -46,7 +46,13 @@ class AttendancePointController extends Controller
 
         $url = url('/attendance/' . $token);
         $filename = 'qr_' . $attendancePoint->id . '.svg';
-        $path = storage_path('app/public/qrcodes/' . $filename);
+        $directory = storage_path('app/public/qrcodes');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $path = $directory . '/' . $filename;
 
         // Generate SVG QR Code (doesn't require imagick)
         file_put_contents(
