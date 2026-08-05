@@ -124,6 +124,11 @@ class EmployeeAttendanceController extends Controller
         return response()->json([
             'verified' => $verified,
             'network_info' => $verified ? "Connected via {$ip}" : null,
+            // Always included (even on failure) so this endpoint can be hit
+            // directly to see what IP the server actually detected - the
+            // one thing you need to diagnose a WiFi-gate mismatch, which
+            // network_info alone doesn't reveal when verification fails.
+            'detected_ip' => $ip,
         ]);
     }
     public function scan()
