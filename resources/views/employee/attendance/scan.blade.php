@@ -71,8 +71,50 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
     const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    const canvasCtx = canvas.getContext('2d', { willReadFrequently: true });
+
+    let activeStream = null;
+    let scanning = false;
+
+    // Only follow QR codes that point at this app's own attendance route -
+    // a malicious sticker placed over/near a real QR code could otherwise
+    // redirect a scanning employee anywhere.
+    function isSafeAttendanceUrl(value) {
+        try {
+            const url = new URL(value, window.location.origin);
+            return url.origin === window.location.origin && url.pathname.startsWith('/attendance/');
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function tick() {
+        if (!scanning) return;
+
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: 'dontInvert',
+            });
+
+            if (code && code.data && isSafeAttendanceUrl(code.data)) {
+                scanning = false;
+                activeStream?.getTracks().forEach(track => track.stop());
+                window.location.href = code.data;
+                return;
+            }
+        }
+
+        requestAnimationFrame(tick);
+    }
 
     async function startCamera() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -81,12 +123,14 @@
         }
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
+            activeStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: { ideal: "environment" } },
                 audio: false
             });
 
-            video.srcObject = stream;
+            video.srcObject = activeStream;
+            scanning = true;
+            requestAnimationFrame(tick);
         } catch (e) {
             console.error(e);
             alert("Camera Error\n\n" + e.name + "\n" + e.message);

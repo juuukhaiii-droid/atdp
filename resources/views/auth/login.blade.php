@@ -77,23 +77,6 @@
                         <i class="fas fa-eye"></i>
                     </span>
                 </div>
-
-                <div class="pin-keypad" id="pin-keypad">
-                    <button type="button" class="pin-key" data-digit="1">1</button>
-                    <button type="button" class="pin-key" data-digit="2">2</button>
-                    <button type="button" class="pin-key" data-digit="3">3</button>
-                    <button type="button" class="pin-key" data-digit="4">4</button>
-                    <button type="button" class="pin-key" data-digit="5">5</button>
-                    <button type="button" class="pin-key" data-digit="6">6</button>
-                    <button type="button" class="pin-key" data-digit="7">7</button>
-                    <button type="button" class="pin-key" data-digit="8">8</button>
-                    <button type="button" class="pin-key" data-digit="9">9</button>
-                    <button type="button" class="pin-key pin-key-ghost" tabindex="-1" disabled aria-hidden="true"></button>
-                    <button type="button" class="pin-key" data-digit="0">0</button>
-                    <button type="button" class="pin-key pin-key-action" id="pin-backspace" aria-label="Backspace">
-                        <i class="fas fa-delete-left"></i>
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -206,39 +189,6 @@
         font-size: 1rem;
     }
 
-    .pin-keypad {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .pin-key {
-        border: 1px solid var(--border-soft);
-        background: #fff;
-        border-radius: var(--radius-md);
-        padding: 13px 0;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text-main);
-        cursor: pointer;
-        transition: background 0.12s ease, transform 0.08s ease, border-color 0.12s ease;
-    }
-
-    .pin-key:hover { background: var(--bg-soft); border-color: #d8dee6; }
-    .pin-key:active { background: #f1f5f9; transform: scale(0.96); }
-
-    .pin-key-ghost {
-        border-color: transparent;
-        background: transparent;
-        cursor: default;
-    }
-
-    .pin-key-action {
-        color: var(--text-soft);
-        font-size: 1rem;
-    }
-
     .btn-brand:disabled {
         opacity: 0.75;
         cursor: not-allowed;
@@ -296,25 +246,6 @@
                 document.getElementById('password').required = !isEmployee;
             });
         });
-
-        const pinInput = document.getElementById('pin');
-        const pinKeypad = document.getElementById('pin-keypad');
-
-        if (pinKeypad && pinInput) {
-            pinKeypad.addEventListener('click', function (e) {
-                const key = e.target.closest('.pin-key');
-                if (!key || key.disabled) return;
-
-                if (key.id === 'pin-backspace') {
-                    pinInput.value = pinInput.value.slice(0, -1);
-                } else if (key.dataset.digit && pinInput.value.length < 4) {
-                    pinInput.value += key.dataset.digit;
-                }
-
-                pinInput.dispatchEvent(new Event('input', { bubbles: true }));
-                pinInput.focus();
-            });
-        }
 
         document.querySelector('form').addEventListener('submit', function () {
             const btn = this.querySelector('button[type="submit"]');
