@@ -390,7 +390,7 @@
 </head>
 <body>
     {{-- Navigation Bar --}}
-    <nav class="navbar navbar-expand-lg main-navbar navbar-dark" role="navigation" aria-label="Main navigation">
+    <nav class="navbar navbar-expand-md main-navbar navbar-dark" role="navigation" aria-label="Main navigation">
         <div class="container-fluid">
             <div class="d-flex align-items-center gap-3">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

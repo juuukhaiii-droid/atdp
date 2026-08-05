@@ -148,7 +148,11 @@ class EmployeeController extends Controller
         'employee_code' => ['required', 'string', 'max:255', 'unique:employees,employee_code,' . $employee->id],
         'full_name' => ['required', 'string', 'max:255'],
         'phone' => ['nullable', 'string', 'max:255'],
-        'email' => ['nullable', 'email', 'max:255', 'unique:employees,email,' . $employee->id],
+        'email' => [
+            'nullable', 'email', 'max:255',
+            'unique:employees,email,' . $employee->id,
+            'unique:users,email,' . $employee->user_id,
+        ],
         'pin' => ['nullable', 'digits:4'],
         'department_id' => ['required', 'exists:departments,id'],
         'shift_id' => ['required', 'exists:shifts,id'],
@@ -169,6 +173,13 @@ class EmployeeController extends Controller
         }
 
         $validated['photo'] = $request->file('photo')->store('employees', 'public');
+    }
+
+    // employees.email is a separate column from the linked users.email
+    // (the one actually checked at login) - keep them in sync so editing
+    // an employee's email here doesn't silently lock them out.
+    if (!empty($validated['email']) && $employee->user && $employee->user->email !== $validated['email']) {
+        $employee->user->update(['email' => $validated['email']]);
     }
 
     $employee->update($validated);

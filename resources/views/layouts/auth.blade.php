@@ -175,6 +175,11 @@
             align-items: center;
             justify-content: center;
             padding: 40px 24px;
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(480px circle at 85% 12%, rgba(220, 38, 38, 0.05), transparent 60%),
+                radial-gradient(420px circle at 8% 92%, rgba(17, 24, 39, 0.04), transparent 60%);
         }
 
         .auth-card {
@@ -182,8 +187,10 @@
             max-width: 420px;
             background: #fff;
             border-radius: var(--radius-lg);
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 16px 40px rgba(220, 38, 38, 0.07), 0 2px 8px rgba(15, 23, 42, 0.05);
             padding: 36px 32px;
+            position: relative;
+            z-index: 1;
         }
 
         .auth-mobile-mark {
@@ -318,6 +325,8 @@
             .auth-form-side { padding: 24px 16px; }
         }
     </style>
+
+    @stack('styles')
 </head>
 <body>
     <div class="auth-shell">

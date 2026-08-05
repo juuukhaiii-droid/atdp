@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\RedirectIfAuthenticated;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function ($middleware) {
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            // Overrides the framework default, which falls back to
+            // redirecting authenticated users hitting a guest route (e.g.
+            // /login) to "/" - and "/" unconditionally redirects to /login,
+            // causing an infinite redirect loop for anyone already logged
+            // in. This sends them to their role's dashboard instead.
+            'guest' => RedirectIfAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

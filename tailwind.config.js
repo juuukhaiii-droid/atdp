@@ -17,5 +17,16 @@ export default {
         },
     },
 
+    corePlugins: {
+        // Tailwind's `.collapse` utility (visibility: collapse) collides
+        // with Bootstrap's own `.collapse` class, which the navbar toggle
+        // relies on for show/hide. Both stylesheets load on every page, so
+        // Tailwind was silently making Bootstrap-collapsed content
+        // permanently invisible even after Bootstrap expanded it. Unused
+        // elsewhere in this app (checked: no `visible`/`invisible`/`collapse`
+        // Tailwind usage exists outside Bootstrap's own class).
+        visibility: false,
+    },
+
     plugins: [forms],
 };
