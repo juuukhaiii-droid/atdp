@@ -23,7 +23,8 @@
             --border-soft: #e5e7eb;
             --bg-soft: #f8fafc;
             --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-            --radius-lg: 18px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
         }
 
         * { box-sizing: border-box; }
@@ -179,6 +180,43 @@
         .auth-card {
             width: 100%;
             max-width: 420px;
+            background: #fff;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            padding: 36px 32px;
+        }
+
+        .auth-mobile-mark {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .auth-mobile-mark-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--brand-dark);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .auth-mobile-mark-title {
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .auth-mobile-mark-subtitle {
+            font-size: 12px;
+            color: var(--text-soft);
         }
 
         .auth-card-header {
@@ -199,7 +237,7 @@
         }
 
         .auth-input-group {
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             overflow: hidden;
         }
 
@@ -222,7 +260,7 @@
 
         .auth-input-group:focus-within {
             box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.12);
-            border-radius: 12px;
+            border-radius: var(--radius-md);
         }
 
         .form-label {
@@ -232,19 +270,20 @@
         }
 
         .btn-brand {
-            background: var(--brand-primary);
-            border-color: var(--brand-primary);
+            background: linear-gradient(135deg, var(--brand-primary) 0%, #b91c1c 100%);
+            border-color: transparent;
             font-weight: 700;
-            border-radius: 12px;
-            padding: 11px 18px;
-            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.25);
-            transition: all 0.2s ease;
+            border-radius: var(--radius-md);
+            padding: 13px 18px;
+            box-shadow: 0 10px 22px rgba(220, 38, 38, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .btn-brand:hover, .btn-brand:focus {
-            background: #b91c1c;
-            border-color: #b91c1c;
-            box-shadow: 0 10px 24px rgba(220, 38, 38, 0.32);
+            background: linear-gradient(135deg, var(--brand-primary) 0%, #b91c1c 100%);
+            border-color: transparent;
+            box-shadow: 0 12px 26px rgba(220, 38, 38, 0.32);
+            transform: translateY(-1px);
         }
 
         .toggle-password {
@@ -270,6 +309,13 @@
         @media (max-width: 991.98px) {
             .auth-brand { display: none; }
             .auth-form-side { flex: 1 1 100%; }
+            .auth-mobile-mark { display: flex; }
+            .auth-card-header h1 { display: none; }
+        }
+
+        @media (max-width: 420px) {
+            .auth-card { padding: 28px 22px; box-shadow: none; }
+            .auth-form-side { padding: 24px 16px; }
         }
     </style>
 </head>
@@ -305,6 +351,14 @@
 
         <div class="auth-form-side">
             <div class="auth-card">
+                <div class="auth-mobile-mark">
+                    <span class="auth-mobile-mark-icon"><i class="fas fa-store"></i></span>
+                    <div>
+                        <div class="auth-mobile-mark-title">ភីហ្សា គ្រួសាររីករាយ</div>
+                        <div class="auth-mobile-mark-subtitle">PizzaHappyFamily</div>
+                    </div>
+                </div>
+
                 @yield('content')
             </div>
         </div>
