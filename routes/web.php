@@ -11,6 +11,7 @@ use App\Http\Controllers\Employee\EmployeeDashboardController;
 use App\Http\Controllers\Employee\EmployeeAttendanceController;
 use App\Http\Controllers\Employee\EmployeeProfileController;
 use App\Http\Controllers\Employee\EmployeeReportController;
+use App\Http\Controllers\PublicFileController;
 use App\Http\Middleware\EnsureOfficeNetwork;
 
 
@@ -18,16 +19,18 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Serves the public disk in place of the public/files symlink - Hostinger's
+// PHP config has symlink() in disable_functions, so `storage:link` can never
+// succeed on this host (not just "hasn't been run yet").
+Route::get('/files/{path}', [PublicFileController::class, 'show'])
+    ->where('path', '.*')
+    ->name('files.show');
+
 // TEMPORARY: no SSH/artisan access on this host. Visit once after deploy to
-// link storage and run pending migrations, then this route gets removed.
+// run pending migrations, then this route gets removed.
 Route::get('/admin/system/run-deploy-tasks', function () {
     $output = [];
 
-    $output[] = '$ php artisan storage:link';
-    \Illuminate\Support\Facades\Artisan::call('storage:link');
-    $output[] = trim(\Illuminate\Support\Facades\Artisan::output()) ?: '(no output)';
-
-    $output[] = '';
     $output[] = '$ php artisan migrate --force';
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     $output[] = trim(\Illuminate\Support\Facades\Artisan::output()) ?: '(no output)';
@@ -110,9 +113,6 @@ Route::get('/api/verify-network', [EmployeeAttendanceController::class, 'verifyN
 
 Route::get('/attendance/{token}', [EmployeeAttendanceController::class, 'login'])
     ->name('attendance.show');
-
-// Route::post('/attendance/{token}', [EmployeeAttendanceController::class, 'submit'])
-//     ->name('attendance.submit');
 
 // Public QR Scanner
 Route::get('/attendance/scan/qr', [EmployeeAttendanceController::class, 'scan'])

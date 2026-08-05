@@ -78,6 +78,12 @@ return [
         // (Hostinger's edge included) blanket-block any /storage/* URL as a
         // Laravel-hardening default, even though public/storage is the safe,
         // intentionally-public half of it.
+        //
+        // On Hostinger this link never actually gets created: PHP's symlink()
+        // is in disable_functions there, so `storage:link` fails outright.
+        // The /files/{path} route (PublicFileController) is what actually
+        // serves these files in production; this entry only matters if the
+        // app ever runs on a host where symlink() is allowed.
         public_path('files') => storage_path('app/public'),
     ],
 
