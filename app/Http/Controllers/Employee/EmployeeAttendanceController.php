@@ -252,9 +252,63 @@ class EmployeeAttendanceController extends Controller
         $photoPath = $photo ? Storage::disk('public')->path($photo) : null;
 
         if ($photoPath && file_exists($photoPath)) {
-            $telegram->sendPhoto($photoPath, $caption);
+            $thumbnail = $this->makeTelegramThumbnail($photoPath);
+            $telegram->sendPhoto($thumbnail ?? $photoPath, $caption);
+
+            if ($thumbnail) {
+                @unlink($thumbnail);
+            }
         } else {
             $telegram->send($caption);
+        }
+    }
+
+    /**
+     * Downscales the employee's photo before sending it to Telegram.
+     * Original profile photos are full-resolution portraits, which Telegram
+     * renders as a large image dominating the chat - shrinking it first
+     * makes the alert display as a compact thumbnail instead. Returns null
+     * (falling back to the original file) if GD can't process the source.
+     */
+    private function makeTelegramThumbnail(string $sourcePath): ?string
+    {
+        try {
+            $info = getimagesize($sourcePath);
+
+            if (!$info) {
+                return null;
+            }
+
+            [$width, $height, $type] = $info;
+
+            $source = match ($type) {
+                IMAGETYPE_JPEG => imagecreatefromjpeg($sourcePath),
+                IMAGETYPE_PNG => imagecreatefrompng($sourcePath),
+                IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($sourcePath) : null,
+                default => null,
+            };
+
+            if (!$source) {
+                return null;
+            }
+
+            $maxSize = 320;
+            $ratio = min($maxSize / $width, $maxSize / $height, 1);
+            $newWidth = max(1, (int) round($width * $ratio));
+            $newHeight = max(1, (int) round($height * $ratio));
+
+            $thumb = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+            $tmpPath = storage_path('app/tg_thumb_' . uniqid() . '.jpg');
+            imagejpeg($thumb, $tmpPath, 85);
+
+            imagedestroy($source);
+            imagedestroy($thumb);
+
+            return $tmpPath;
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 

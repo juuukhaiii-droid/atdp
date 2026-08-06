@@ -125,7 +125,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('admin.attendances.show', $record->id) }}" class="btn btn-sm btn-info">
+                                        <a href="{{ route('admin.attendances.show', [$record->employee_id, $record->attendance_date]) }}" class="btn btn-sm btn-info">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                     </td>

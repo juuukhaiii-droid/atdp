@@ -53,6 +53,10 @@ Route::middleware(['auth'])
         // Employees
         Route::resource('employees', App\Http\Controllers\Admin\EmployeeController::class);
 
+        // Manual attendance correction for one employee's day
+        Route::post('/employees/{employee}/attendance', [App\Http\Controllers\Admin\EmployeeController::class, 'updateAttendance'])
+            ->name('employees.attendance.update');
+
         // Departments
         Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class);
 
@@ -63,8 +67,13 @@ Route::middleware(['auth'])
         Route::resource('attendance-points', App\Http\Controllers\Admin\AttendancePointController::class);
 
         // Attendance Records
-        Route::resource('attendances', App\Http\Controllers\Admin\AttendanceController::class)
-            ->only(['index', 'show']);
+        // Custom (not resourceful) because there's no real numeric id to
+        // bind to anymore - "records" are aggregated on the fly from raw
+        // scan events, keyed by employee + date instead.
+        Route::get('/attendances', [App\Http\Controllers\Admin\AttendanceController::class, 'index'])
+            ->name('attendances.index');
+        Route::get('/attendances/{employee}/{date}', [App\Http\Controllers\Admin\AttendanceController::class, 'show'])
+            ->name('attendances.show');
 
         // Attendance History
         Route::get('/attendance-history', [App\Http\Controllers\Admin\AttendanceReportController::class, 'index'])

@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AttendanceRecord;
+use App\Models\AttendancePoint;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Shift;
 use App\Models\User;
+use App\Services\AttendanceSummaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -69,58 +70,46 @@ class EmployeeController extends Controller
         ->route('admin.employees.index')
         ->with('success', 'Employee created successfully.');
 }
-    public function show(Request $request, Employee $employee)
+    public function show(Request $request, Employee $employee, AttendanceSummaryService $attendanceSummary)
     {
         $employee->load(['department', 'shift']);
 
-        $attendanceQuery = AttendanceRecord::with(['attendancePoint'])
-            ->where('employee_id', $employee->id);
+        $filters = ['employee_id' => $employee->id];
 
         if ($request->filled('date')) {
-            $attendanceQuery->whereDate('attendance_date', $request->date);
+            $filters['date'] = $request->date;
         }
 
-        if ($request->filled('month')) {
-            $monthParts = explode('-', $request->month);
-            if (count($monthParts) === 2) {
-                $attendanceQuery->whereYear('attendance_date', $monthParts[0])
-                    ->whereMonth('attendance_date', $monthParts[1]);
-            }
-        }
-
-        if ($request->filled('year')) {
-            $attendanceQuery->whereYear('attendance_date', $request->year);
-        }
-
-        $attendanceRecords = $attendanceQuery->latest('attendance_date')->get();
+        $attendanceRecords = $attendanceSummary->summarize($filters);
 
         $presentCount = $attendanceRecords->where('status', 'present')->count();
         $lateCount = $attendanceRecords->where('status', 'late')->count();
         $totalAttendance = $attendanceRecords->count();
 
-        // calendar month and year
-        $calendarMonth = now()->month;
-        $calendarYear = now()->year;
-
-        if ($request->filled('month')) {
-            $monthParts = explode('-', $request->month);
-            if (count($monthParts) === 2) {
-                $calendarYear = (int) $monthParts[0];
-                $calendarMonth = (int) $monthParts[1];
-            }
-        } elseif ($request->filled('year')) {
-            $calendarYear = (int) $request->year;
+        // Calendar follows the selected day's month, so picking a date both
+        // filters the table to that day and lets you browse its month -
+        // without needing separate Month/Year controls.
+        if ($request->filled('date')) {
+            $selected = \Carbon\Carbon::parse($request->date);
+            $calendarYear = $selected->year;
+            $calendarMonth = $selected->month;
+        } else {
+            $calendarMonth = now()->month;
+            $calendarYear = now()->year;
         }
 
         $daysInMonth = \Carbon\Carbon::create($calendarYear, $calendarMonth, 1)->daysInMonth;
 
-        $monthlyAttendance = AttendanceRecord::where('employee_id', $employee->id)
-            ->whereYear('attendance_date', $calendarYear)
-            ->whereMonth('attendance_date', $calendarMonth)
-            ->get()
+        $monthlyAttendance = $attendanceSummary
+            ->summarize([
+                'employee_id' => $employee->id,
+                'month' => sprintf('%04d-%02d', $calendarYear, $calendarMonth),
+            ])
             ->keyBy(function ($record) {
                 return \Carbon\Carbon::parse($record->attendance_date)->day;
             });
+
+        $attendancePoints = AttendancePoint::where('status', 'active')->orderBy('name')->get();
 
         return view('admin.employees.show', compact(
             'employee',
@@ -131,8 +120,41 @@ class EmployeeController extends Controller
             'calendarMonth',
             'calendarYear',
             'daysInMonth',
-            'monthlyAttendance'
+            'monthlyAttendance',
+            'attendancePoints'
         ));
+    }
+
+    /**
+     * Admin correction for a single day - creates/updates the
+     * attendance_records override that AttendanceSummaryService prefers
+     * over the raw scan-event computation for that employee+date.
+     */
+    public function updateAttendance(Request $request, Employee $employee, AttendanceSummaryService $attendanceSummary)
+    {
+        $validated = $request->validate([
+            'date' => ['required', 'date'],
+            'check_in_time' => ['nullable', 'date_format:H:i'],
+            'check_out_time' => ['nullable', 'date_format:H:i'],
+            'attendance_point_id' => ['required', 'exists:attendance_points,id'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $attendanceSummary->upsertOverride(
+            $employee,
+            $validated['date'],
+            $validated['check_in_time'] ?? null,
+            $validated['check_out_time'] ?? null,
+            $validated['attendance_point_id'],
+            $validated['note'] ?? null
+        );
+
+        return redirect()
+            ->route('admin.employees.show', [
+                $employee,
+                'month' => \Carbon\Carbon::parse($validated['date'])->format('Y-m'),
+            ])
+            ->with('success', 'Attendance updated for ' . $validated['date'] . '.');
     }
     public function edit(Employee $employee)
     {
