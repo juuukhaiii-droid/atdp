@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendancePoint;
+use App\Models\User;
 use App\Services\OfficeNetworkChecker;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 
 class EmployeeAttendanceController extends Controller
@@ -66,12 +68,9 @@ class EmployeeAttendanceController extends Controller
         $user = Auth::user();
         $label = $type === 'in' ? 'Check-In' : 'Check-Out';
 
-        $telegram->send(
-            "✅ <b>{$label}</b>\n" .
-            "Name: {$user->name}\n" .
-            "Time: {$attendance->scanned_at->format('d M Y H:i:s')}\n" .
-            "IP: {$attendance->ip_address}"
-        );
+        $this->notifyTelegram($telegram, $user, $this->buildAttendanceCaption(
+            $user, $type, $attendance->scanned_at, $attendance->ip_address
+        ));
 
         session()->flash('attendance_result', [
             'type' => $type,
@@ -228,13 +227,9 @@ class EmployeeAttendanceController extends Controller
         // Telegram notification
         $user = Auth::user();
 
-        $telegram->send(
-            "✅ Attendance\n" .
-            "Employee : {$user->name}\n" .
-            "Type : " . strtoupper($type) . "\n" .
-            "Location : {$attendancePoint->name}\n" .
-            "Time : {$attendance->scanned_at->format('d M Y H:i:s')}"
-        );
+        $this->notifyTelegram($telegram, $user, $this->buildAttendanceCaption(
+            $user, $type, $attendance->scanned_at, $attendance->ip_address, $attendancePoint->name
+        ));
 
         // Success session
         session()->flash('attendance_result', [
@@ -245,5 +240,67 @@ class EmployeeAttendanceController extends Controller
         ]);
 
         return redirect()->route('employee.attendance.success');
+    }
+
+    /**
+     * Sends the attendance alert with the employee's profile photo attached
+     * when one exists, falling back to a plain text message otherwise.
+     */
+    private function notifyTelegram(TelegramService $telegram, User $user, string $caption): void
+    {
+        $photo = $user->employee?->photo;
+        $photoPath = $photo ? Storage::disk('public')->path($photo) : null;
+
+        if ($photoPath && file_exists($photoPath)) {
+            $telegram->sendPhoto($photoPath, $caption);
+        } else {
+            $telegram->send($caption);
+        }
+    }
+
+    /**
+     * Builds the shared HTML-formatted Telegram caption used by both the
+     * QR-scan flow and the direct check-in/out buttons, so the two paths
+     * no longer produce differently-shaped messages for the same event.
+     */
+    private function buildAttendanceCaption(
+        User $user,
+        string $type,
+        \Illuminate\Support\Carbon $scannedAt,
+        string $ip,
+        ?string $location = null
+    ): string {
+        $employee = $user->employee;
+        $label = $type === 'in' ? 'Check In' : 'Check Out';
+        $emoji = $type === 'in' ? '🟢' : '🔴';
+
+        $lines = [
+            '📋 <b>Attendance Update</b>',
+            '',
+            "{$emoji} <b>" . e($label) . '</b>',
+            '👤 ' . e($user->name),
+        ];
+
+        if ($employee) {
+            $role = trim(implode(' · ', array_filter([
+                $employee->department->name ?? null,
+                $employee->position ?? null,
+            ])));
+
+            if ($role !== '') {
+                $lines[] = '🏢 ' . e($role);
+            }
+        }
+
+        $lines[] = '🕒 ' . $scannedAt->format('d M Y, h:i A');
+
+        if ($location) {
+            $lines[] = '📍 ' . e($location);
+        }
+
+        $lines[] = '';
+        $lines[] = '<code>IP ' . e($ip) . '</code>';
+
+        return implode("\n", $lines);
     }
 }

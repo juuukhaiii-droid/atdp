@@ -65,6 +65,29 @@ class TelegramService
     }
 
     /**
+     * Send a photo with a caption
+     */
+    public function sendPhoto($filePath, $caption = '')
+    {
+        try {
+            return Http::attach(
+                'photo',
+                fopen($filePath, 'r')
+            )->post(
+                "https://api.telegram.org/bot{$this->token}/sendPhoto",
+                [
+                    'chat_id' => $this->chatId,
+                    'caption' => $caption,
+                    'parse_mode' => 'HTML',
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('Telegram Service Error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Send a document/file
      */
     public function sendDocument($filePath, $caption = '')
