@@ -6,6 +6,13 @@
 
     <div class="section-title" style="margin-top:0;">Scan Attendance QR</div>
 
+    <div class="app-card wifi-status-card mb-3" id="wifiStatusCard">
+        <div class="card-body d-flex align-items-center gap-2">
+            <i class="fas fa-spinner fa-spin" id="wifiStatusIcon"></i>
+            <span id="wifiStatusText">Checking office WiFi&hellip;</span>
+        </div>
+    </div>
+
     <div class="app-card scan-card mb-3">
         <div class="card-body p-0">
             <div class="scan-viewport">
@@ -67,6 +74,18 @@
     }
 
     .scan-hint i { color: var(--brand-primary); }
+
+    .wifi-status-card .card-body {
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .wifi-status-card.wifi-connected { background: #dcfce7; color: #166534; }
+    .wifi-status-card.wifi-connected i { color: #16a34a; }
+
+    .wifi-status-card.wifi-disconnected { background: #fee2e2; color: #991b1b; }
+    .wifi-status-card.wifi-disconnected i { color: #dc2626; }
 </style>
 @endpush
 
@@ -138,5 +157,41 @@
     }
 
     startCamera();
+
+    (function () {
+        const card = document.getElementById('wifiStatusCard');
+        const icon = document.getElementById('wifiStatusIcon');
+        const text = document.getElementById('wifiStatusText');
+
+        async function checkOfficeWifi() {
+            try {
+                const res = await fetch("{{ route('api.verify-network') }}", {
+                    cache: 'no-cache',
+                    headers: { 'Accept': 'application/json' },
+                });
+                const data = await res.json();
+
+                card.classList.remove('wifi-connected', 'wifi-disconnected');
+
+                if (data.verified) {
+                    card.classList.add('wifi-connected');
+                    icon.className = 'fas fa-wifi';
+                    text.textContent = 'Connected to Office WiFi';
+                } else {
+                    card.classList.add('wifi-disconnected');
+                    icon.className = 'fas fa-triangle-exclamation';
+                    text.textContent = 'Not on Office WiFi — check-in will be rejected';
+                }
+            } catch (e) {
+                card.classList.remove('wifi-connected');
+                card.classList.add('wifi-disconnected');
+                icon.className = 'fas fa-triangle-exclamation';
+                text.textContent = 'Unable to check WiFi status';
+            }
+        }
+
+        checkOfficeWifi();
+        setInterval(checkOfficeWifi, 10000);
+    })();
 </script>
 @endpush

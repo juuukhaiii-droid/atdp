@@ -6,23 +6,33 @@
 
     @if ($employee)
         <div class="app-card profile-hero mb-3">
-            <div class="card-body text-center">
-                @if ($employee->photo)
-                    <img src="{{ asset('files/' . $employee->photo) }}" alt="Profile Photo" class="profile-avatar">
-                @else
-                    <div class="profile-avatar profile-avatar-placeholder">
-                        <i class="fas fa-user"></i>
+            <div class="card-body">
+                <div class="profile-hero-top">
+                    @if ($employee->photo)
+                        <img src="{{ asset('files/' . $employee->photo) }}" alt="Profile Photo" class="profile-avatar">
+                    @else
+                        <div class="profile-avatar profile-avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    @endif
+
+                    <div class="profile-hero-info">
+                        <div class="profile-name">{{ $employee->full_name }}</div>
+                        <div class="profile-code">{{ $employee->employee_code }}</div>
                     </div>
-                @endif
 
-                <div class="profile-name">{{ $employee->full_name }}</div>
-                <div class="profile-code">{{ $employee->employee_code }}</div>
+                    @if ($employee->status === 'active')
+                        <span class="status-pill status-pill-done"><i class="fas fa-check me-1"></i>Active</span>
+                    @else
+                        <span class="status-pill status-pill-idle"><i class="fas fa-pause me-1"></i>Inactive</span>
+                    @endif
+                </div>
 
-                @if ($employee->status === 'active')
-                    <span class="status-pill status-pill-done mt-2"><i class="fas fa-check me-1"></i>Active</span>
-                @else
-                    <span class="status-pill status-pill-idle mt-2"><i class="fas fa-pause me-1"></i>Inactive</span>
-                @endif
+                <div class="profile-hero-divider"></div>
+
+                <div class="profile-since">
+                    <i class="fas fa-calendar-days me-1"></i>Member since {{ $employee->created_at->format('M Y') }}
+                </div>
             </div>
         </div>
 
@@ -48,30 +58,40 @@
 
         <div class="section-title">Work Info</div>
         <div class="app-card mb-3">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-6">
+            <div class="card-body p-0">
+                <div class="profile-row">
+                    <i class="fas fa-building profile-row-icon"></i>
+                    <div>
                         <div class="info-label">Department</div>
                         <div class="info-value">{{ $employee->department->name ?? 'N/A' }}</div>
                     </div>
-                    <div class="col-6">
+                </div>
+                <div class="profile-row profile-row-border-top">
+                    <i class="fas fa-briefcase profile-row-icon"></i>
+                    <div>
                         <div class="info-label">Position</div>
                         <div class="info-value">{{ $employee->position ?? 'N/A' }}</div>
                     </div>
-                    <div class="col-6">
+                </div>
+                <div class="profile-row profile-row-border-top">
+                    <i class="fas fa-user-clock profile-row-icon"></i>
+                    <div>
                         <div class="info-label">Shift</div>
                         <div class="info-value">{{ $employee->shift->name ?? 'N/A' }}</div>
                     </div>
-                    @if ($employee->shift)
-                        <div class="col-6">
+                </div>
+                @if ($employee->shift)
+                    <div class="profile-row profile-row-border-top">
+                        <i class="fas fa-clock profile-row-icon"></i>
+                        <div>
                             <div class="info-label">Work Time</div>
                             <div class="info-value">
                                 {{ \Carbon\Carbon::parse($employee->shift->start_time)->format('h:i A') }} -
                                 {{ \Carbon\Carbon::parse($employee->shift->end_time)->format('h:i A') }}
                             </div>
                         </div>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
     @else
@@ -89,12 +109,27 @@
 <style>
     .profile-hero { background: linear-gradient(160deg, #ffffff 0%, #fef7f7 100%); }
 
+    .profile-hero .card-body {
+        padding: 16px 18px;
+    }
+
+    .profile-hero-top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .profile-hero-info {
+        flex: 1;
+        min-width: 0;
+    }
+
     .profile-avatar {
-        width: 96px;
-        height: 96px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         object-fit: cover;
-        margin-bottom: 12px;
+        flex-shrink: 0;
     }
 
     .profile-avatar-placeholder {
@@ -103,29 +138,46 @@
         justify-content: center;
         background: #f1f5f9;
         color: #94a3b8;
-        font-size: 2.2rem;
+        font-size: 1.4rem;
     }
 
     .profile-name {
-        font-size: 1.15rem;
+        font-size: 1rem;
         font-weight: 800;
         letter-spacing: -0.02em;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .profile-code {
-        font-size: 12.5px;
+        font-size: 12px;
         color: var(--text-soft);
         font-weight: 600;
-        margin-bottom: 6px;
+        line-height: 1.3;
+    }
+
+    .profile-hero-divider {
+        height: 1px;
+        background: var(--border-soft);
+        margin: 14px 0 10px;
+    }
+
+    .profile-since {
+        font-size: 12px;
+        color: var(--text-soft);
     }
 
     .status-pill {
         display: inline-flex;
         align-items: center;
-        padding: 5px 11px;
+        padding: 4px 10px;
         border-radius: 999px;
-        font-size: 11.5px;
+        font-size: 11px;
         font-weight: 700;
+        line-height: 1.4;
+        flex-shrink: 0;
     }
 
     .status-pill-done { background: #dcfce7; color: #166534; }

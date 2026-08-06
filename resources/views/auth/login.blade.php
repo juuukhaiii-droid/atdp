@@ -126,12 +126,6 @@
                     Remember me
                 </label>
             </div>
-
-            @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" id="forgot-password-link" style="display: {{ $activeMode === 'admin' ? 'inline' : 'none' }}; font-size: 14px; color: var(--brand-primary); text-decoration: none; font-weight: 600;">
-                    Forgot password?
-                </a>
-            @endif
         </div>
 
         <button type="submit" class="btn btn-brand w-100 text-white py-2">
