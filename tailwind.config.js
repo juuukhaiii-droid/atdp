@@ -13,6 +13,30 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                body: ['Inter', '"Noto Sans Khmer"', ...defaultTheme.fontFamily.sans],
+                khmer: ['"Noto Sans Khmer"', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                brand: {
+                    dark: '#111827',
+                    primary: '#dc2626',
+                    'primary-soft': '#fee2e2',
+                    success: '#16a34a',
+                    warning: '#f59e0b',
+                    danger: '#ef4444',
+                },
+                ink: {
+                    DEFAULT: '#0f172a',
+                    soft: '#64748b',
+                },
+            },
+            borderRadius: {
+                'brand-lg': '18px',
+                'brand-md': '14px',
+            },
+            boxShadow: {
+                card: '0 10px 30px rgba(15, 23, 42, 0.06)',
+                'card-lg': '0 15px 40px rgba(15, 23, 42, 0.1)',
             },
         },
     },

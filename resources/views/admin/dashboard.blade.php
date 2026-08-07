@@ -1,176 +1,159 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="max-w-7xl mx-auto px-4">
     @php
         $isToday = $selectedDate === now()->toDateString();
         $selectedCarbon = \Illuminate\Support\Carbon::parse($selectedDate);
     @endphp
 
-   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4 dash-header">
-    <div>
-        <h1 class="page-title khmer-text">ប្រព័ន្ធត្រួតពិនិត្យវត្តមាន</h1>
-        <p class="page-desc khmer-text">សង្ខេបព័ត៌មានវត្តមានបុគ្គលិកប្រចាំថ្ងៃ</p>
-    </div>
-    <div class="text-md-end dash-date">
-        <div class="fw-semibold">{{ now()->format('d M Y') }}</div>
-        <div class="text-muted">{{ now()->format('h:i A') }}</div>
-    </div>
-</div>
-
-    <div class="card section-card date-filter-card mb-4">
-        <div class="card-body">
-            <form method="GET" class="date-filter-form">
-                <div class="date-filter-icon">
-                    <i class="fas fa-calendar-week"></i>
-                </div>
-
-                <div class="date-filter-input-group">
-                    <label class="date-filter-label">Viewing Date</label>
-                    <input type="date" name="date" class="date-filter-input" value="{{ $selectedDate }}"
-                        max="{{ now()->toDateString() }}" onchange="this.form.submit()">
-                </div>
-
-                <div class="date-filter-nav">
-                    <a href="{{ route('admin.dashboard', ['date' => $selectedCarbon->copy()->subDay()->toDateString()]) }}"
-                        class="date-filter-nav-btn" title="Previous day">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-
-                    <a href="{{ $isToday ? '#' : route('admin.dashboard', ['date' => $selectedCarbon->copy()->addDay()->toDateString()]) }}"
-                        class="date-filter-nav-btn {{ $isToday ? 'disabled' : '' }}" title="Next day">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-
-                <button type="submit" class="date-filter-apply">
-                    <i class="fas fa-magnifying-glass"></i> View
-                </button>
-
-                @unless ($isToday)
-                    <a href="{{ route('admin.dashboard') }}" class="date-filter-today">
-                        <i class="fas fa-clock-rotate-left"></i> Back to Today
-                    </a>
-                @endunless
-            </form>
+    <div class="flex justify-between items-start flex-wrap gap-2 mb-6">
+        <div>
+            <h1 class="font-khmer text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">ប្រព័ន្ធត្រួតពិនិត្យវត្តមាន</h1>
+            <p class="font-khmer text-ink-soft">សង្ខេបព័ត៌មានវត្តមានបុគ្គលិកប្រចាំថ្ងៃ</p>
+        </div>
+        <div class="text-right text-sm sm:text-base">
+            <div class="font-semibold">{{ now()->format('d M Y') }}</div>
+            <div class="text-ink-soft">{{ now()->format('h:i A') }}</div>
         </div>
     </div>
 
-    <div class="row g-2 g-md-4 mb-4">
-        <div class="col-6 col-xl-3">
-            <div class="card dashboard-card">
-                <div class="card-body">
-                    <div class="summary-top mb-3">
-                        <div class="summary-label khmer-text">បុគ្គលិកសរុប</div>
-                        <div class="summary-icon" style="background:#e2e8f0; color:#334155;">👥</div>
-                    </div>
-                    <h3 class="summary-value">{{ $totalEmployees }}</h3>
-                    <div class="muted-small mt-2">Total active employees</div>
-                </div>
+    <div class="rounded-brand-lg shadow-card bg-gradient-to-br from-white to-slate-50 mb-6 p-5">
+        <form method="GET" class="flex flex-wrap items-end gap-3.5">
+            <div class="w-11 h-11 rounded-brand-md bg-blue-100 text-blue-800 flex items-center justify-center text-lg shrink-0">
+                <i class="fas fa-calendar-week"></i>
             </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-ink-soft uppercase tracking-wide">Viewing Date</label>
+                <input type="date" name="date" value="{{ $selectedDate }}" max="{{ now()->toDateString() }}"
+                    onchange="this.form.submit()"
+                    class="border border-slate-200 rounded-[10px] px-3 py-2.5 font-semibold text-sm min-w-[170px] bg-white focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+            </div>
+
+            <div class="flex gap-1.5">
+                <a href="{{ route('admin.dashboard', ['date' => $selectedCarbon->copy()->subDay()->toDateString()]) }}"
+                    class="w-10 h-10 rounded-[10px] border border-slate-200 bg-white text-ink-soft flex items-center justify-center hover:bg-slate-100 hover:text-ink transition" title="Previous day">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+
+                <a href="{{ $isToday ? '#' : route('admin.dashboard', ['date' => $selectedCarbon->copy()->addDay()->toDateString()]) }}"
+                    class="w-10 h-10 rounded-[10px] border border-slate-200 bg-white text-ink-soft flex items-center justify-center hover:bg-slate-100 hover:text-ink transition {{ $isToday ? 'opacity-35 pointer-events-none' : '' }}" title="Next day">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <button type="submit" class="inline-flex items-center gap-2 rounded-[10px] bg-brand-dark text-white font-bold text-sm px-[18px] py-2.5 hover:opacity-90 transition">
+                <i class="fas fa-magnifying-glass"></i> View
+            </button>
+
+            @unless ($isToday)
+                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-red-100 text-red-800 font-bold text-sm px-4 py-2.5 hover:bg-red-200 transition">
+                    <i class="fas fa-clock-rotate-left"></i> Back to Today
+                </a>
+            @endunless
+        </form>
+    </div>
+
+    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
+            <div class="flex items-center justify-between mb-3">
+                <div class="font-khmer text-ink-soft font-semibold text-sm">បុគ្គលិកសរុប</div>
+                <div class="w-11 h-11 rounded-brand-md bg-slate-200 text-slate-700 flex items-center justify-center text-lg">👥</div>
+            </div>
+            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none">{{ $totalEmployees }}</h3>
+            <div class="text-ink-soft text-[13px] mt-2">Total active employees</div>
         </div>
 
-        <div class="col-6 col-xl-3">
-            <div class="card dashboard-card">
-                <div class="card-body">
-                    <div class="summary-top mb-3">
-                        <div class="summary-label khmer-text">មកធ្វើការទាន់ម៉ោង</div>
-                        <div class="summary-icon" style="background:#dcfce7; color:#166534;">✓</div>
-                    </div>
-                    <h3 class="summary-value" style="color:#16a34a;">{{ $presentToday }}</h3>
-                    <div class="muted-small mt-2">Checked in {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
-                </div>
+        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
+            <div class="flex items-center justify-between mb-3">
+                <div class="font-khmer text-ink-soft font-semibold text-sm">មកធ្វើការទាន់ម៉ោង</div>
+                <div class="w-11 h-11 rounded-brand-md bg-green-100 text-green-800 flex items-center justify-center text-lg">✓</div>
             </div>
+            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none text-green-600">{{ $presentToday }}</h3>
+            <div class="text-ink-soft text-[13px] mt-2">Checked in {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
         </div>
 
-        <div class="col-6 col-xl-3">
-            <div class="card dashboard-card">
-                <div class="card-body">
-                    <div class="summary-top mb-3">
-                        <div class="summary-label khmer-text">មកធ្វើការយឺត</div>
-                        <div class="summary-icon" style="background:#fef3c7; color:#92400e;">⏰</div>
-                    </div>
-                    <h3 class="summary-value" style="color:#f59e0b;">{{ $lateToday }}</h3>
-                    <div class="muted-small mt-2">Late attendance {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
-                </div>
+        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
+            <div class="flex items-center justify-between mb-3">
+                <div class="font-khmer text-ink-soft font-semibold text-sm">មកធ្វើការយឺត</div>
+                <div class="w-11 h-11 rounded-brand-md bg-amber-100 text-amber-800 flex items-center justify-center text-lg">⏰</div>
             </div>
+            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none text-amber-500">{{ $lateToday }}</h3>
+            <div class="text-ink-soft text-[13px] mt-2">Late attendance {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
         </div>
 
-        <div class="col-6 col-xl-3">
-            <div class="card dashboard-card">
-                <div class="card-body">
-                    <div class="summary-top mb-3">
-                        <div class="summary-label khmer-text">អវត្តមាន</div>
-                        <div class="summary-icon" style="background:#fee2e2; color:#991b1b;">✕</div>
-                    </div>
-                    <h3 class="summary-value" style="color:#ef4444;">{{ $absentToday }}</h3>
-                    <div class="muted-small mt-2">Absent employees {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
-                </div>
+        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
+            <div class="flex items-center justify-between mb-3">
+                <div class="font-khmer text-ink-soft font-semibold text-sm">អវត្តមាន</div>
+                <div class="w-11 h-11 rounded-brand-md bg-red-100 text-red-800 flex items-center justify-center text-lg">✕</div>
             </div>
+            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none text-red-500">{{ $absentToday }}</h3>
+            <div class="text-ink-soft text-[13px] mt-2">Absent employees {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
         </div>
     </div>
 
-    <div class="card section-card">
-        <div class="card-header khmer-text d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
+        <div class="font-khmer flex justify-between items-center flex-wrap gap-2 px-5 sm:px-6 py-4 border-b border-slate-200 font-bold">
             <span>បញ្ជីវត្តមានប្រចាំថ្ងៃ</span>
-            <span class="muted-small">{{ $selectedCarbon->format('l, d M Y') }}</span>
+            <span class="text-ink-soft text-[13px] font-normal">{{ $selectedCarbon->format('l, d M Y') }}</span>
         </div>
 
         {{-- Desktop/tablet: full table --}}
-        <div class="card-body table-responsive d-none d-md-block">
-            <table class="table table-modern align-middle">
+        <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr>
-                        <th class="khmer-text">លេខសម្គាល់បុគ្គលិក</th>
-                        <th class="khmer-text">ឈ្មោះបុគ្គលិក</th>
-                        <th class="khmer-text">ផ្នែកការងារ</th>
-                        <th class="khmer-text">ប្រភេទវត្តមាន</th>
-                        <th class="khmer-text">ម៉ោងចូល</th>
-                        <th class="khmer-text">ម៉ោងចេញ</th>
-                        <th>Status</th>
-                        <th>Late Time</th>
+                    <tr class="bg-slate-50">
+                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">លេខសម្គាល់បុគ្គលិក</th>
+                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ឈ្មោះបុគ្គលិក</th>
+                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ផ្នែកការងារ</th>
+                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ប្រភេទវត្តមាន</th>
+                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ម៉ោងចូល</th>
+                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ម៉ោងចេញ</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Status</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Late Time</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($todayRecords as $record)
-                        <tr>
-                            <td>
-                                <span class="code-pill">{{ $record->employee->employee_code ?? '-' }}</span>
+                        <tr class="hover:bg-slate-50/80 align-middle">
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <span class="inline-block px-2.5 py-1.5 rounded-[10px] bg-slate-100 text-ink text-[13px] font-bold">{{ $record->employee->employee_code ?? '-' }}</span>
                             </td>
-                            <td>
-                                <div class="fw-semibold">{{ $record->employee->full_name ?? '-' }}</div>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <div class="font-semibold">{{ $record->employee->full_name ?? '-' }}</div>
                             </td>
-                            <td>{{ $record->employee->department->name ?? '-' }}</td>
-                            <td>{{ $record->attendancePoint->name ?? '-' }}</td>
-                            <td>{{ $record->check_in_time ?? '-' }}</td>
-                            <td>{{ $record->check_out_time ?? '-' }}</td>
-                            <td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->employee->department->name ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->attendancePoint->name ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_in_time ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_out_time ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
                                 @if($record->status === 'late')
-                                    <span class="status-badge status-late">Late</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
                                 @elseif($record->status === 'present')
-                                    <span class="status-badge status-present">Present</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
                                 @else
-                                    <span class="status-badge status-absent">{{ ucfirst($record->status) }}</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-red-100 text-red-800">{{ ucfirst($record->status) }}</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
                                 @php
                                     $hours = floor($record->late_minutes / 60);
                                     $minutes = $record->late_minutes % 60;
                                 @endphp
 
                                 @if($record->late_minutes > 0)
-                                    <span class="late-time-text">
+                                    <span class="font-bold text-amber-700">
                                         {{ str_pad($hours, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutes, 2, '0', STR_PAD_LEFT) }}
                                     </span>
                                 @else
-                                    <span class="text-muted">00:00</span>
+                                    <span class="text-ink-soft">00:00</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-ink-soft py-8">
                                 No attendance records today.
                             </td>
                         </tr>
@@ -180,42 +163,42 @@
         </div>
 
         {{-- Mobile: card list --}}
-        <div class="card-body d-md-none p-0">
+        <div class="md:hidden">
             @forelse($todayRecords as $record)
-                <div class="mobile-record-row">
-                    <div class="d-flex justify-content-between align-items-start">
+                <div class="px-4 py-3.5 border-b border-slate-100 last:border-b-0">
+                    <div class="flex justify-between items-start">
                         <div>
-                            <div class="fw-semibold">{{ $record->employee->full_name ?? '-' }}</div>
-                            <span class="code-pill">{{ $record->employee->employee_code ?? '-' }}</span>
+                            <div class="font-semibold">{{ $record->employee->full_name ?? '-' }}</div>
+                            <span class="inline-block mt-1 px-2.5 py-1.5 rounded-[10px] bg-slate-100 text-ink text-[13px] font-bold">{{ $record->employee->employee_code ?? '-' }}</span>
                         </div>
                         @if($record->status === 'late')
-                            <span class="status-badge status-late">Late</span>
+                            <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
                         @elseif($record->status === 'present')
-                            <span class="status-badge status-present">Present</span>
+                            <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
                         @else
-                            <span class="status-badge status-absent">{{ ucfirst($record->status) }}</span>
+                            <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-red-100 text-red-800">{{ ucfirst($record->status) }}</span>
                         @endif
                     </div>
-                    <div class="mobile-record-meta">
-                        <span><i class="fas fa-sitemap me-1"></i>{{ $record->employee->department->name ?? '-' }}</span>
-                        <span><i class="fas fa-location-dot me-1"></i>{{ $record->attendancePoint->name ?? '-' }}</span>
+                    <div class="flex flex-wrap gap-2.5 text-[12.5px] text-ink-soft mt-1.5">
+                        <span><i class="fas fa-sitemap mr-1"></i>{{ $record->employee->department->name ?? '-' }}</span>
+                        <span><i class="fas fa-location-dot mr-1"></i>{{ $record->attendancePoint->name ?? '-' }}</span>
                     </div>
-                    <div class="mobile-record-times">
-                        <span><i class="fas fa-arrow-right-to-bracket me-1 text-success"></i>{{ $record->check_in_time ?? '--:--' }}</span>
-                        <span><i class="fas fa-arrow-right-from-bracket me-1 text-warning"></i>{{ $record->check_out_time ?? '--:--' }}</span>
+                    <div class="flex flex-wrap gap-3 text-[12.5px] font-semibold mt-2">
+                        <span><i class="fas fa-arrow-right-to-bracket mr-1 text-green-600"></i>{{ $record->check_in_time ?? '--:--' }}</span>
+                        <span><i class="fas fa-arrow-right-from-bracket mr-1 text-amber-500"></i>{{ $record->check_out_time ?? '--:--' }}</span>
                         @if($record->late_minutes > 0)
                             @php
                                 $hours = floor($record->late_minutes / 60);
                                 $minutes = $record->late_minutes % 60;
                             @endphp
-                            <span class="late-time-text">
-                                <i class="fas fa-clock me-1"></i>{{ str_pad($hours, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutes, 2, '0', STR_PAD_LEFT) }}
+                            <span class="font-bold text-amber-700">
+                                <i class="fas fa-clock mr-1"></i>{{ str_pad($hours, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutes, 2, '0', STR_PAD_LEFT) }}
                             </span>
                         @endif
                     </div>
                 </div>
             @empty
-                <div class="text-center text-muted py-4">
+                <div class="text-center text-ink-soft py-8">
                     No attendance records today.
                 </div>
             @endforelse
@@ -223,190 +206,3 @@
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    @media (max-width: 767.98px) {
-        .dash-header {
-            gap: 4px !important;
-        }
-
-        .dash-date {
-            font-size: 13px;
-        }
-    }
-
-    .date-filter-card {
-        background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
-    }
-
-    .date-filter-form {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-end;
-        gap: 14px;
-    }
-
-    .date-filter-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 14px;
-        background: #dbeafe;
-        color: #1e40af;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-
-    .date-filter-input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .date-filter-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text-soft);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .date-filter-input {
-        border: 1px solid var(--border-soft);
-        border-radius: 10px;
-        padding: 9px 12px;
-        font-weight: 600;
-        font-size: 14px;
-        min-width: 170px;
-        color: var(--text-main);
-        background: #fff;
-    }
-
-    .date-filter-input:focus {
-        outline: none;
-        border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-    }
-
-    .date-filter-nav {
-        display: flex;
-        gap: 6px;
-    }
-
-    .date-filter-nav-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        border: 1px solid var(--border-soft);
-        background: #fff;
-        color: var(--text-soft);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .date-filter-nav-btn:hover {
-        background: #f1f5f9;
-        color: var(--text-main);
-    }
-
-    .date-filter-nav-btn.disabled {
-        opacity: 0.35;
-        pointer-events: none;
-    }
-
-    .date-filter-apply {
-        border: 0;
-        border-radius: 10px;
-        padding: 10px 18px;
-        background: var(--brand-dark);
-        color: #fff;
-        font-weight: 700;
-        font-size: 13.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .date-filter-apply:hover {
-        opacity: 0.9;
-        color: #fff;
-    }
-
-    .date-filter-today {
-        border: 0;
-        border-radius: 10px;
-        padding: 10px 16px;
-        background: #fee2e2;
-        color: #991b1b;
-        font-weight: 700;
-        font-size: 13.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-
-    .date-filter-today:hover {
-        background: #fecaca;
-        color: #7f1d1d;
-    }
-
-    @media (max-width: 575.98px) {
-        .date-filter-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .date-filter-input {
-            min-width: 0;
-            width: 100%;
-        }
-
-        .date-filter-nav {
-            width: 100%;
-        }
-
-        .date-filter-nav-btn {
-            flex: 1;
-        }
-
-        .date-filter-apply,
-        .date-filter-today {
-            justify-content: center;
-        }
-    }
-
-    .mobile-record-row {
-        padding: 14px 16px;
-        border-bottom: 1px solid var(--border-soft);
-    }
-
-    .mobile-record-row:last-child {
-        border-bottom: 0;
-    }
-
-    .mobile-record-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        font-size: 12.5px;
-        color: var(--text-soft);
-        margin-top: 6px;
-    }
-
-    .mobile-record-times {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        font-size: 12.5px;
-        font-weight: 600;
-        margin-top: 8px;
-    }
-</style>
-@endpush

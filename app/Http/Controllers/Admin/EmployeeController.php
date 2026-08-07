@@ -212,7 +212,11 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        $employee->delete();
+        DB::transaction(function () use ($employee) {
+            $user = $employee->user;
+            $employee->delete();
+            $user?->delete();
+        });
 
         return redirect()->route('admin.employees.index')
             ->with('success', 'Employee deleted successfully.');

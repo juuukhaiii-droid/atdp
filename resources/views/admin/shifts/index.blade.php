@@ -1,68 +1,68 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+<div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between items-center flex-wrap gap-3 mb-6">
         <div>
-            <h1 class="page-title mb-1">ម៉ោងធ្វើការ</h1>
-            <p class="page-desc mb-0">Manage working time, shift hours, and late attendance rules</p>
+            <h1 class="font-khmer text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">ម៉ោងធ្វើការ</h1>
+            <p class="text-ink-soft">Manage working time, shift hours, and late attendance rules</p>
         </div>
 
-        <a href="{{ route('admin.shifts.create') }}" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm">
+        <a href="{{ route('admin.shifts.create') }}" class="font-khmer inline-flex items-center rounded-[10px] bg-brand-primary text-white font-semibold px-4 py-2.5 shadow-sm hover:opacity-90 transition">
             + បន្ថែមម៉ោងធ្វើការថ្មី
         </a>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success border-0 shadow-sm rounded-4">
+        <div class="rounded-brand-lg bg-green-100 text-green-800 shadow-sm px-5 py-4 mb-5">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="card section-card">
-        <div class="card-header">
+    <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
+        <div class="font-khmer px-5 sm:px-6 py-4 border-b border-slate-200 font-bold">
              បញ្ជីម៉ោងធ្វើការ (Shifts) - Define work schedules and attendance rules for employees
         </div>
 
-        <div class="card-body table-responsive">
-            <table class="table table-modern align-middle">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Late After</th>
-                        <th width="200">Action</th>
+                    <tr class="bg-slate-50">
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Name</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Start Time</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">End Time</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Late After</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200 w-[200px]">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($shifts as $shift)
-                        <tr>
-                            <td>
-                                <div class="d-flex flex-column">
-                                    <span class="fw-semibold">{{ $shift->name }}</span>
-                                    <span class="muted-small">Working schedule</span>
+                        <tr class="hover:bg-slate-50/80 align-middle">
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <div class="flex flex-col">
+                                    <span class="font-semibold">{{ $shift->name }}</span>
+                                    <span class="text-ink-soft text-[13px]">Working schedule</span>
                                 </div>
                             </td>
-                            <td>
-                                <span class="time-pill">{{ \Carbon\Carbon::parse($shift->start_time)->format('h:i A') }}</span>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <span class="inline-block px-3 py-2 rounded-[10px] bg-blue-50 text-blue-700 text-[13px] font-bold">{{ \Carbon\Carbon::parse($shift->start_time)->format('h:i A') }}</span>
                             </td>
-                            <td>
-                                <span class="time-pill">{{ \Carbon\Carbon::parse($shift->end_time)->format('h:i A') }}</span>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <span class="inline-block px-3 py-2 rounded-[10px] bg-blue-50 text-blue-700 text-[13px] font-bold">{{ \Carbon\Carbon::parse($shift->end_time)->format('h:i A') }}</span>
                             </td>
-                            <td>
-                                <span class="late-pill">{{ \Carbon\Carbon::parse($shift->late_after)->format('h:i A') }}</span>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <span class="inline-block px-3 py-2 rounded-[10px] bg-amber-100 text-amber-800 text-[13px] font-bold">{{ \Carbon\Carbon::parse($shift->late_after)->format('h:i A') }}</span>
                             </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('admin.shifts.edit', $shift) }}" class="btn btn-warning btn-sm rounded-3 px-3 fw-semibold">
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <div class="flex gap-2">
+                                    <a href="{{ route('admin.shifts.edit', $shift) }}" class="inline-flex items-center rounded-[10px] bg-amber-400 text-ink text-sm font-semibold px-3 py-1.5 hover:bg-amber-500 transition">
                                         Edit
                                     </a>
 
                                     <form action="{{ route('admin.shifts.destroy', $shift) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button onclick="return confirm('Delete this shift?')" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold">
+                                        <button onclick="return confirm('Delete this shift?')" class="inline-flex items-center rounded-[10px] bg-brand-danger text-white text-sm font-semibold px-3 py-1.5 hover:opacity-90 transition">
                                             Delete
                                         </button>
                                     </form>
@@ -71,9 +71,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5">
-                                <div class="text-muted">
-                                    <div class="fs-5 fw-semibold mb-1">No shifts found</div>
+                            <td colspan="5" class="text-center py-10">
+                                <div class="text-ink-soft">
+                                    <div class="text-lg font-semibold mb-1">No shifts found</div>
                                     <div>Create your first shift to define attendance time rules.</div>
                                 </div>
                             </td>
@@ -85,27 +85,3 @@
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    .time-pill {
-        display: inline-block;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: #eff6ff;
-        color: #1d4ed8;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .late-pill {
-        display: inline-block;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: #fef3c7;
-        color: #92400e;
-        font-size: 13px;
-        font-weight: 700;
-    }
-</style>
-@endpush

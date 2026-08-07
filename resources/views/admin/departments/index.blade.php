@@ -1,64 +1,64 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+<div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between items-center flex-wrap gap-3 mb-6">
         <div>
-            <h1 class="page-title mb-1 khmer-text">ផ្នែកការងារ</h1>
-            <p class="page-desc mb-0">Manage company departments and organize employee groups</p>
+            <h1 class="font-khmer text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">ផ្នែកការងារ</h1>
+            <p class="text-ink-soft">Manage company departments and organize employee groups</p>
         </div>
 
-        <a href="{{ route('admin.departments.create') }}" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm khmer-text">
+        <a href="{{ route('admin.departments.create') }}" class="font-khmer inline-flex items-center rounded-[10px] bg-brand-primary text-white font-semibold px-4 py-2.5 shadow-sm hover:opacity-90 transition">
             + បន្ថែមផ្នែកការងារ
         </a>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success border-0 shadow-sm rounded-4">
+        <div class="rounded-brand-lg bg-green-100 text-green-800 shadow-sm px-5 py-4 mb-5">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="card section-card">
-        <div class="card-header khmer-text">
+    <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
+        <div class="font-khmer px-5 sm:px-6 py-4 border-b border-slate-200 font-bold">
             បញ្ជីផ្នែកការងារ
         </div>
 
-        <div class="card-body table-responsive">
-            <table class="table table-modern align-middle">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th width="200">Action</th>
+                    <tr class="bg-slate-50">
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Name</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Description</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200 w-[200px]">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($departments as $department)
-                        <tr>
-                            <td>
-                                <div class="d-flex flex-column">
-                                    <span class="fw-semibold">{{ $department->name }}</span>
-                                    <span class="muted-small">Department unit</span>
+                        <tr class="hover:bg-slate-50/80 align-middle">
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <div class="flex flex-col">
+                                    <span class="font-semibold">{{ $department->name }}</span>
+                                    <span class="text-ink-soft text-[13px]">Department unit</span>
                                 </div>
                             </td>
-                            <td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
                                 @if($department->description)
-                                    <span class="department-desc">{{ $department->description }}</span>
+                                    <span class="inline-block px-3 py-2 rounded-[10px] bg-slate-50 text-slate-700 text-[13px] font-semibold border border-slate-200">{{ $department->description }}</span>
                                 @else
-                                    <span class="text-muted">No description</span>
+                                    <span class="text-ink-soft">No description</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('admin.departments.edit', $department) }}" class="btn btn-warning btn-sm rounded-3 px-3 fw-semibold">
+                            <td class="px-3.5 py-4 border-b border-slate-100">
+                                <div class="flex gap-2">
+                                    <a href="{{ route('admin.departments.edit', $department) }}" class="inline-flex items-center rounded-[10px] bg-amber-400 text-ink text-sm font-semibold px-3 py-1.5 hover:bg-amber-500 transition">
                                         Edit
                                     </a>
 
                                     <form action="{{ route('admin.departments.destroy', $department) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button onclick="return confirm('Delete this department?')" class="btn btn-danger btn-sm rounded-3 px-3 fw-semibold">
+                                        <button onclick="return confirm('Delete this department?')" class="inline-flex items-center rounded-[10px] bg-brand-danger text-white text-sm font-semibold px-3 py-1.5 hover:opacity-90 transition">
                                             Delete
                                         </button>
                                     </form>
@@ -67,9 +67,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="text-center py-5">
-                                <div class="text-muted">
-                                    <div class="fs-5 fw-semibold mb-1">No departments found</div>
+                            <td colspan="3" class="text-center py-10">
+                                <div class="text-ink-soft">
+                                    <div class="text-lg font-semibold mb-1">No departments found</div>
                                     <div>Create your first department to organize employees.</div>
                                 </div>
                             </td>
@@ -81,18 +81,3 @@
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    .department-desc {
-        display: inline-block;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: #f8fafc;
-        color: #334155;
-        font-size: 13px;
-        font-weight: 600;
-        border: 1px solid #e2e8f0;
-    }
-</style>
-@endpush

@@ -1,43 +1,45 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="mb-4">
-        <h1 class="page-title mb-1 khmer-text">បង្កើតផ្នែកការងារ</h1>
-        <p class="page-desc mb-0">Add a new department for employee organization</p>
+<div class="max-w-7xl mx-auto px-4">
+    <div class="mb-6">
+        <h1 class="font-khmer text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">បង្កើតផ្នែកការងារ</h1>
+        <p class="text-ink-soft">Add a new department for employee organization</p>
     </div>
 
     @if ($errors->any())
-        <div class="alert alert-danger border-0 shadow-sm rounded-4">
+        <div class="rounded-brand-lg bg-red-100 text-red-800 shadow-sm px-5 py-4 mb-5">
             {{ $errors->first() }}
         </div>
     @endif
 
-    <div class="card section-card">
-        <div class="card-header khmer-text">
+    <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
+        <div class="font-khmer px-5 sm:px-6 py-4 border-b border-slate-200 font-bold">
             ព័ត៌មានផ្នែកការងារ
         </div>
 
-        <div class="card-body">
+        <div class="p-5 sm:p-6">
             <form method="POST" action="{{ route('admin.departments.store') }}">
                 @csrf
 
-                <div class="row g-4">
-                    <div class="col-md-12">
-                        <label class="form-label fw-semibold">Department Name</label>
-                        <input type="text" name="name" class="form-control form-control-lg rounded-3" placeholder="Example: Office" required>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block font-semibold text-sm mb-1.5">Department Name</label>
+                        <input type="text" name="name" placeholder="Example: Office" required
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                     </div>
 
-                    <div class="col-md-12">
-                        <label class="form-label fw-semibold">Description</label>
-                        <input type="text" name="description" class="form-control form-control-lg rounded-3" placeholder="Example: Main office team">
-                        <div class="form-text">Optional short description for this department</div>
+                    <div>
+                        <label class="block font-semibold text-sm mb-1.5">Description</label>
+                        <input type="text" name="description" placeholder="Example: Main office team"
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <div class="text-ink-soft text-xs mt-1.5">Optional short description for this department</div>
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex gap-2">
-                    <button class="btn btn-primary px-4 py-2 rounded-3 fw-semibold">Save Department</button>
-                    <a href="{{ route('admin.departments.index') }}" class="btn btn-light border px-4 py-2 rounded-3 fw-semibold">Back</a>
+                <div class="mt-6 flex gap-2">
+                    <button class="inline-flex items-center rounded-[10px] bg-brand-primary text-white font-semibold px-4 py-2.5 hover:opacity-90 transition">Save Department</button>
+                    <a href="{{ route('admin.departments.index') }}" class="inline-flex items-center rounded-[10px] border border-slate-200 bg-white text-ink font-semibold px-4 py-2.5 hover:bg-slate-50 transition">Back</a>
                 </div>
             </form>
         </div>

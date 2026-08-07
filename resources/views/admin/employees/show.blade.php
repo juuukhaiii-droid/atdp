@@ -1,95 +1,95 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="max-w-7xl mx-auto px-4" x-data="attendanceEditor()">
     @php
         $today = now()->toDateString();
     @endphp
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+    <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
         <div>
-            <h1 class="page-title mb-1">Employee Detail</h1>
-            <p class="page-desc mb-0">View employee information and attendance history</p>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">Employee Detail</h1>
+            <p class="text-ink-soft">View employee information and attendance history</p>
         </div>
 
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.employees.edit', $employee) }}" class="btn btn-warning px-4 py-2 rounded-3 fw-semibold">
+        <div class="flex gap-2">
+            <a href="{{ route('admin.employees.edit', $employee) }}" class="inline-flex items-center rounded-[10px] bg-amber-400 text-ink font-semibold px-4 py-2.5 hover:bg-amber-500 transition">
                 Edit Employee
             </a>
-            <a href="{{ route('admin.employees.index') }}" class="btn btn-light border px-4 py-2 rounded-3 fw-semibold">
+            <a href="{{ route('admin.employees.index') }}" class="inline-flex items-center rounded-[10px] border border-slate-200 bg-white text-ink font-semibold px-4 py-2.5 hover:bg-slate-50 transition">
                 Back
             </a>
         </div>
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="rounded-brand-lg bg-green-100 text-green-800 shadow-sm px-5 py-4 mb-4">{{ session('success') }}</div>
     @endif
 
-    <div class="row g-3 mb-3 align-items-start">
-        <div class="col-lg-4">
-            <div class="card section-card">
-                <div class="card-header">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-3 items-start">
+        <div class="lg:col-span-4">
+            <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-200 font-bold">
                     Employee Information
                 </div>
 
-                <div class="card-body">
-                    <div class="text-center mb-3">
+                <div class="p-5">
+                    <div class="text-center mb-4">
                         @if($employee->photo)
                             <img
                                 src="{{ asset('files/' . $employee->photo) }}"
                                 alt="Employee Photo"
-                                class="employee-profile-img">
+                                class="w-[110px] h-[110px] object-cover rounded-full border-4 border-white shadow-[0_8px_20px_rgba(15,23,42,0.12)] mx-auto">
                         @else
-                            <div class="employee-profile-placeholder">
+                            <div class="w-[110px] h-[110px] mx-auto rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-4xl font-extrabold border-4 border-white shadow-[0_8px_20px_rgba(15,23,42,0.12)]">
                                 {{ strtoupper(substr($employee->full_name, 0, 1)) }}
                             </div>
                         @endif
                     </div>
 
-                    <div class="employee-info-grid">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                         <div>
-                            <div class="muted-small">Employee Code</div>
-                            <div class="fw-semibold">{{ $employee->employee_code }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Employee Code</div>
+                            <div class="font-semibold">{{ $employee->employee_code }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Full Name</div>
-                            <div class="fw-semibold">{{ $employee->full_name }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Full Name</div>
+                            <div class="font-semibold">{{ $employee->full_name }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Department</div>
-                            <div class="fw-semibold">{{ $employee->department->name ?? '-' }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Department</div>
+                            <div class="font-semibold">{{ $employee->department->name ?? '-' }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Shift</div>
-                            <div class="fw-semibold">{{ $employee->shift->name ?? '-' }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Shift</div>
+                            <div class="font-semibold">{{ $employee->shift->name ?? '-' }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Position</div>
-                            <div class="fw-semibold">{{ $employee->position ?: '-' }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Position</div>
+                            <div class="font-semibold">{{ $employee->position ?: '-' }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Phone</div>
-                            <div class="fw-semibold">{{ $employee->phone ?: '-' }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Phone</div>
+                            <div class="font-semibold">{{ $employee->phone ?: '-' }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Email</div>
-                            <div class="fw-semibold">{{ $employee->email ?: '-' }}</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Email</div>
+                            <div class="font-semibold">{{ $employee->email ?: '-' }}</div>
                         </div>
 
                         <div>
-                            <div class="muted-small">Status</div>
+                            <div class="text-ink-soft text-[11.5px] mb-0.5">Status</div>
                             <div class="mt-1">
                                 @if($employee->status === 'active')
-                                    <span class="status-badge status-present">Active</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Active</span>
                                 @else
-                                    <span class="status-badge status-absent">Inactive</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-red-100 text-red-800">Inactive</span>
                                 @endif
                             </div>
                         </div>
@@ -98,72 +98,59 @@
             </div>
         </div>
 
-        <div class="col-lg-8">
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <div class="summary-label">Total Attendance</div>
-                            <h3 class="summary-value">{{ $totalAttendance }}</h3>
-                        </div>
-                    </div>
+        <div class="lg:col-span-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div class="rounded-brand-lg shadow-card bg-white p-5">
+                    <div class="text-ink-soft font-semibold text-sm mb-2">Total Attendance</div>
+                    <h3 class="text-2xl font-extrabold leading-none">{{ $totalAttendance }}</h3>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <div class="summary-label">Present</div>
-                            <h3 class="summary-value" style="color:#16a34a;">{{ $presentCount }}</h3>
-                        </div>
-                    </div>
+                <div class="rounded-brand-lg shadow-card bg-white p-5">
+                    <div class="text-ink-soft font-semibold text-sm mb-2">Present</div>
+                    <h3 class="text-2xl font-extrabold leading-none text-green-600">{{ $presentCount }}</h3>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <div class="summary-label">Late</div>
-                            <h3 class="summary-value" style="color:#f59e0b;">{{ $lateCount }}</h3>
-                        </div>
-                    </div>
+                <div class="rounded-brand-lg shadow-card bg-white p-5">
+                    <div class="text-ink-soft font-semibold text-sm mb-2">Late</div>
+                    <h3 class="text-2xl font-extrabold leading-none text-amber-500">{{ $lateCount }}</h3>
                 </div>
             </div>
 
-            <div class="card section-card date-filter-card">
-                <div class="card-body">
-                    <form method="GET" action="{{ route('admin.employees.show', $employee) }}" class="date-filter-form">
-                        <div class="date-filter-icon">
-                            <i class="fas fa-calendar-week"></i>
-                        </div>
+            <div class="rounded-brand-lg shadow-card bg-gradient-to-br from-white to-slate-50 p-5">
+                <form method="GET" action="{{ route('admin.employees.show', $employee) }}" class="flex flex-wrap items-end gap-3.5">
+                    <div class="w-11 h-11 rounded-brand-md bg-blue-100 text-blue-800 flex items-center justify-center text-lg shrink-0">
+                        <i class="fas fa-calendar-week"></i>
+                    </div>
 
-                        <div class="date-filter-input-group">
-                            <label class="date-filter-label">Month/Day/Year</label>
-                            <input type="date" name="date" class="date-filter-input" value="{{ request('date') }}">
-                        </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-bold text-ink-soft uppercase tracking-wide">Month/Day/Year</label>
+                        <input type="date" name="date" value="{{ request('date') }}"
+                            class="border border-slate-200 rounded-[10px] px-3 py-2.5 font-semibold text-sm min-w-[150px] bg-white focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                    </div>
 
-                        <button type="submit" class="date-filter-apply">
-                            <i class="fas fa-magnifying-glass"></i> Filter
-                        </button>
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-[10px] bg-brand-dark text-white font-bold text-sm px-[18px] py-2.5 hover:opacity-90 transition">
+                        <i class="fas fa-magnifying-glass"></i> Filter
+                    </button>
 
-                        @if (request('date'))
-                            <a href="{{ route('admin.employees.show', $employee) }}" class="date-filter-today">
-                                <i class="fas fa-rotate-left"></i> Reset
-                            </a>
-                        @endif
-                    </form>
-                </div>
+                    @if (request('date'))
+                        <a href="{{ route('admin.employees.show', $employee) }}" class="inline-flex items-center gap-2 rounded-[10px] bg-red-100 text-red-800 font-bold text-sm px-4 py-2.5 hover:bg-red-200 transition">
+                            <i class="fas fa-rotate-left"></i> Reset
+                        </a>
+                    @endif
+                </form>
             </div>
         </div>
     </div>
 
-    <div class="card section-card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="rounded-brand-lg shadow-card bg-white mb-3 overflow-hidden">
+        <div class="flex justify-between items-center px-5 py-4 border-b border-slate-200 font-bold">
             <span>Monthly Attendance Calendar</span>
-            <span class="muted-small">
+            <span class="text-ink-soft text-[13px] font-normal">
                 {{ \Carbon\Carbon::create($calendarYear, $calendarMonth, 1)->format('F Y') }}
             </span>
         </div>
 
-        <div class="card-body">
+        <div class="p-5">
             <div class="attendance-calendar-grid">
                 @for($day = 1; $day <= $daysInMonth; $day++)
                     @php
@@ -200,7 +187,7 @@
                                 ];
                             @endphp
                             <button type="button" class="attendance-day-edit-btn" title="Edit attendance"
-                                onclick="openAttendanceEditor({{ \Illuminate\Support\Js::from($cellPayload) }})">
+                                @click="open({{ \Illuminate\Support\Js::from($cellPayload) }})">
                                 <i class="fas fa-pen"></i>
                             </button>
                         @endif
@@ -226,57 +213,57 @@
         </div>
     </div>
 
-    <div class="card section-card">
-        <div class="card-header">
+    <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-200 font-bold">
             Attendance Detail Table
         </div>
 
-        <div class="card-body table-responsive">
-            <table class="table table-modern align-middle">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Point</th>
-                        <th>Check In</th>
-                        <th>Check Out</th>
-                        <th>Status</th>
-                        <th>Late Time</th>
-                        <th>Note</th>
-                        <th></th>
+                    <tr class="bg-slate-50">
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Date</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Point</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Check In</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Check Out</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Status</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Late Time</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Note</th>
+                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($attendanceRecords as $record)
-                        <tr>
-                            <td>{{ $record->attendance_date }}</td>
-                            <td>{{ $record->attendancePoint->name ?? '-' }}</td>
-                            <td>{{ $record->check_in_time ?? '-' }}</td>
-                            <td>{{ $record->check_out_time ?? '-' }}</td>
-                            <td>
+                        <tr class="hover:bg-slate-50/80 align-middle">
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->attendance_date }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->attendancePoint->name ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_in_time ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_out_time ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
                                 @if($record->status === 'late')
-                                    <span class="status-badge status-late">Late</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
                                 @elseif($record->status === 'present')
-                                    <span class="status-badge status-present">Present</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
                                 @else
-                                    <span class="status-badge status-absent">{{ ucfirst($record->status) }}</span>
+                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-red-100 text-red-800">{{ ucfirst($record->status) }}</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
                                 @php
                                     $hours = floor($record->late_minutes / 60);
                                     $minutes = $record->late_minutes % 60;
                                 @endphp
 
                                 @if($record->late_minutes > 0)
-                                    <span class="late-time-text">
+                                    <span class="font-bold text-amber-700">
                                         {{ str_pad($hours, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutes, 2, '0', STR_PAD_LEFT) }}
                                     </span>
                                 @else
-                                    <span class="text-muted">00:00</span>
+                                    <span class="text-ink-soft">00:00</span>
                                 @endif
                             </td>
-                            <td class="text-muted small">{{ $record->note ?: '-' }}</td>
-                            <td>
+                            <td class="px-3.5 py-4 border-b border-slate-100 text-ink-soft text-[13px]">{{ $record->note ?: '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">
                                 @if ($record->attendance_date <= $today)
                                     @php
                                         $rowPayload = [
@@ -287,16 +274,16 @@
                                             'note' => $record->note ?? '',
                                         ];
                                     @endphp
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Edit attendance"
-                                        onclick="openAttendanceEditor({{ \Illuminate\Support\Js::from($rowPayload) }})">
-                                        <i class="fas fa-pen"></i>
+                                    <button type="button" class="w-8 h-8 rounded-lg border border-slate-200 text-ink-soft hover:bg-slate-100 hover:text-ink transition inline-flex items-center justify-center" title="Edit attendance"
+                                        @click="open({{ \Illuminate\Support\Js::from($rowPayload) }})">
+                                        <i class="fas fa-pen text-xs"></i>
                                     </button>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-10 text-ink-soft">
                                 No attendance records found.
                             </td>
                         </tr>
@@ -305,48 +292,53 @@
             </table>
         </div>
     </div>
-</div>
 
-{{-- Shared edit modal for both the calendar cells and the table rows --}}
-<div class="modal fade" id="attendanceEditModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form method="POST" action="{{ route('admin.employees.attendance.update', $employee) }}" class="modal-content">
+    {{-- Shared edit modal for both the calendar cells and the table rows --}}
+    <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="modalOpen = false"></div>
+
+        <form method="POST" action="{{ route('admin.employees.attendance.update', $employee) }}"
+            class="relative bg-white rounded-brand-lg shadow-card-lg w-full max-w-md overflow-hidden" @click.outside="modalOpen = false">
             @csrf
-            <input type="hidden" name="date" id="editDate">
+            <input type="hidden" name="date" :value="form.date">
 
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Attendance &mdash; <span id="editDateLabel"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+                <h5 class="font-bold">Edit Attendance &mdash; <span x-text="form.date"></span></h5>
+                <button type="button" class="text-ink-soft hover:text-ink" @click="modalOpen = false" aria-label="Close">
+                    <i class="fas fa-xmark"></i>
+                </button>
             </div>
 
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label fw-semibold">Check In</label>
-                        <input type="time" name="check_in_time" id="editCheckIn" class="form-control">
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label fw-semibold">Check Out</label>
-                        <input type="time" name="check_out_time" id="editCheckOut" class="form-control">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Attendance Point</label>
-                        <select name="attendance_point_id" id="editPoint" class="form-select" required>
-                            @foreach ($attendancePoints as $point)
-                                <option value="{{ $point->id }}">{{ $point->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Note</label>
-                        <textarea name="note" id="editNote" class="form-control" rows="2" maxlength="255" placeholder="Reason for correction (optional)"></textarea>
-                    </div>
+            <div class="p-5 grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-sm mb-1.5">Check In</label>
+                    <input type="time" name="check_in_time" x-model="form.checkIn"
+                        class="w-full border border-slate-200 rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                </div>
+                <div>
+                    <label class="block font-semibold text-sm mb-1.5">Check Out</label>
+                    <input type="time" name="check_out_time" x-model="form.checkOut"
+                        class="w-full border border-slate-200 rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-semibold text-sm mb-1.5">Attendance Point</label>
+                    <select name="attendance_point_id" x-model="form.pointId" required
+                        class="w-full border border-slate-200 rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        @foreach ($attendancePoints as $point)
+                            <option value="{{ $point->id }}">{{ $point->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label class="block font-semibold text-sm mb-1.5">Note</label>
+                    <textarea name="note" x-model="form.note" rows="2" maxlength="255" placeholder="Reason for correction (optional)"
+                        class="w-full border border-slate-200 rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10"></textarea>
                 </div>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary fw-semibold">Save</button>
+            <div class="flex justify-end gap-2 px-5 py-4 border-t border-slate-200">
+                <button type="button" class="inline-flex items-center rounded-[10px] border border-slate-200 bg-white text-ink font-semibold px-4 py-2 hover:bg-slate-50 transition" @click="modalOpen = false">Cancel</button>
+                <button type="submit" class="inline-flex items-center rounded-[10px] bg-brand-primary text-white font-semibold px-4 py-2 hover:opacity-90 transition">Save</button>
             </div>
         </form>
     </div>
@@ -355,42 +347,6 @@
 
 @push('styles')
 <style>
-    .employee-profile-img {
-        width: 110px;
-        height: 110px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 4px solid #fff;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
-    }
-
-    .employee-profile-placeholder {
-        width: 110px;
-        height: 110px;
-        margin: 0 auto;
-        border-radius: 50%;
-        background: #dbeafe;
-        color: #1d4ed8;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        font-weight: 800;
-        border: 4px solid #fff;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
-    }
-
-    .employee-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px 16px;
-    }
-
-    .employee-info-grid .muted-small {
-        font-size: 11.5px;
-        margin-bottom: 2px;
-    }
-
     .attendance-calendar-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -491,129 +447,26 @@
         font-size: 11px;
         color: #b45309;
     }
-
-    /* Reused from the admin dashboard's date filter bar for visual consistency */
-    .date-filter-card {
-        background: linear-gradient(160deg, #ffffff 0%, #f8fafc 100%);
-    }
-
-    .date-filter-form {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-end;
-        gap: 14px;
-    }
-
-    .date-filter-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 14px;
-        background: #dbeafe;
-        color: #1e40af;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-
-    .date-filter-input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .date-filter-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text-soft);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .date-filter-input {
-        border: 1px solid var(--border-soft);
-        border-radius: 10px;
-        padding: 9px 12px;
-        font-weight: 600;
-        font-size: 14px;
-        min-width: 150px;
-        color: var(--text-main);
-        background: #fff;
-    }
-
-    .date-filter-input:focus {
-        outline: none;
-        border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
-    }
-
-    .date-filter-apply {
-        border: 0;
-        border-radius: 10px;
-        padding: 10px 18px;
-        background: var(--brand-dark);
-        color: #fff;
-        font-weight: 700;
-        font-size: 13.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .date-filter-apply:hover {
-        opacity: 0.9;
-        color: #fff;
-    }
-
-    .date-filter-today {
-        border: 0;
-        border-radius: 10px;
-        padding: 10px 16px;
-        background: #fee2e2;
-        color: #991b1b;
-        font-weight: 700;
-        font-size: 13.5px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-
-    .date-filter-today:hover {
-        background: #fecaca;
-        color: #7f1d1d;
-    }
-
-    @media (max-width: 575.98px) {
-        .date-filter-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .date-filter-input {
-            min-width: 0;
-            width: 100%;
-        }
-    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    function openAttendanceEditor(data) {
-        document.getElementById('editDate').value = data.date;
-        document.getElementById('editDateLabel').textContent = data.date;
-        document.getElementById('editCheckIn').value = data.checkIn || '';
-        document.getElementById('editCheckOut').value = data.checkOut || '';
-        document.getElementById('editNote').value = data.note || '';
-
-        const pointSelect = document.getElementById('editPoint');
-        if (data.pointId) {
-            pointSelect.value = data.pointId;
-        }
-
-        new bootstrap.Modal(document.getElementById('attendanceEditModal')).show();
+    function attendanceEditor() {
+        return {
+            modalOpen: false,
+            form: { date: '', checkIn: '', checkOut: '', pointId: '', note: '' },
+            open(data) {
+                this.form = {
+                    date: data.date || '',
+                    checkIn: data.checkIn || '',
+                    checkOut: data.checkOut || '',
+                    pointId: data.pointId || '',
+                    note: data.note || '',
+                };
+                this.modalOpen = true;
+            },
+        };
     }
 </script>
 @endpush
