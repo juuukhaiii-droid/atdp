@@ -8,21 +8,7 @@ use App\Models\Employee;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * The live check-in flow only ever writes to the `attendances` table (one
- * row per scan event: type in/out, scanned_at, ip_address). Admin screens
- * were built against a separate `attendance_records` table (one row per
- * employee per day, with status/late_minutes) that nothing wrote to
- * anymore - its old writer routes weren't registered. This service bridges
- * the gap by aggregating the real scan events into that same per-day shape
- * at read time.
- *
- * `attendance_records` isn't dead weight anymore, though: it's now the
- * store for manual admin corrections (see upsertOverride()). When a row
- * exists there for an employee+date, it fully replaces whatever the raw
- * scan events would have computed for that day - that's the whole point
- * of a correction.
- */
+
 class AttendanceSummaryService
 {
     /**

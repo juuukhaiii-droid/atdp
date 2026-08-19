@@ -16,9 +16,6 @@ class TelegramService
         $this->chatId = env('TELEGRAM_CHAT_ID');
     }
 
-    /**
-     * Send a simple text message
-     */
     public function send($message)
     {
         try {
@@ -87,9 +84,6 @@ class TelegramService
         }
     }
 
-    /**
-     * Send a document/file
-     */
     public function sendDocument($filePath, $caption = '')
     {
         try {
