@@ -10,7 +10,6 @@ use App\Services\OfficeNetworkChecker;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 
 class EmployeeAttendanceController extends Controller
@@ -58,18 +57,21 @@ class EmployeeAttendanceController extends Controller
             abort(403, 'You must be connected to office WiFi to ' . ($type === 'in' ? 'check in' : 'check out') . '.');
         }
 
+        $workSummary = $type === 'out' ? trim((string) $request->input('work_summary')) : null;
+
         $attendance = Attendance::create([
             'user_id' => Auth::id(),
             'type' => $type,
             'scanned_at' => now(),
             'ip_address' => $request->ip(),
+            'work_summary' => $workSummary ?: null,
         ]);
 
         $user = Auth::user();
         $label = $type === 'in' ? 'Check-In' : 'Check-Out';
 
-        $this->notifyTelegram($telegram, $user, $this->buildAttendanceCaption(
-            $user, $type, $attendance->scanned_at, $attendance->ip_address
+        $this->notifyTelegram($telegram, $this->buildAttendanceCaption(
+            $user, $type, $attendance->scanned_at, $attendance->ip_address, null, $attendance->work_summary
         ));
 
         session()->flash('attendance_result', [
@@ -215,6 +217,8 @@ class EmployeeAttendanceController extends Controller
             ? 'out'
             : 'in';
 
+        $workSummary = $type === 'out' ? trim((string) $request->input('work_summary')) : null;
+
         // Save attendance
         $attendance = Attendance::create([
             'user_id' => Auth::id(),
@@ -222,13 +226,14 @@ class EmployeeAttendanceController extends Controller
             'type' => $type,
             'scanned_at' => now(),
             'ip_address' => $request->ip(),
+            'work_summary' => $workSummary ?: null,
         ]);
 
         // Telegram notification
         $user = Auth::user();
 
-        $this->notifyTelegram($telegram, $user, $this->buildAttendanceCaption(
-            $user, $type, $attendance->scanned_at, $attendance->ip_address, $attendancePoint->name
+        $this->notifyTelegram($telegram, $this->buildAttendanceCaption(
+            $user, $type, $attendance->scanned_at, $attendance->ip_address, $attendancePoint->name, $attendance->work_summary
         ));
 
         // Success session
@@ -243,73 +248,11 @@ class EmployeeAttendanceController extends Controller
     }
 
     /**
-     * Sends the attendance alert with the employee's profile photo attached
-     * when one exists, falling back to a plain text message otherwise.
+     * Sends the attendance alert as a plain text message.
      */
-    private function notifyTelegram(TelegramService $telegram, User $user, string $caption): void
+    private function notifyTelegram(TelegramService $telegram, string $caption): void
     {
-        $photo = $user->employee?->photo;
-        $photoPath = $photo ? Storage::disk('public')->path($photo) : null;
-
-        if ($photoPath && file_exists($photoPath)) {
-            $thumbnail = $this->makeTelegramThumbnail($photoPath);
-            $telegram->sendPhoto($thumbnail ?? $photoPath, $caption);
-
-            if ($thumbnail) {
-                @unlink($thumbnail);
-            }
-        } else {
-            $telegram->send($caption);
-        }
-    }
-
-    /**
-     * Downscales the employee's photo before sending it to Telegram.
-     * Original profile photos are full-resolution portraits, which Telegram
-     * renders as a large image dominating the chat - shrinking it first
-     * makes the alert display as a compact thumbnail instead. Returns null
-     * (falling back to the original file) if GD can't process the source.
-     */
-    private function makeTelegramThumbnail(string $sourcePath): ?string
-    {
-        try {
-            $info = getimagesize($sourcePath);
-
-            if (!$info) {
-                return null;
-            }
-
-            [$width, $height, $type] = $info;
-
-            $source = match ($type) {
-                IMAGETYPE_JPEG => imagecreatefromjpeg($sourcePath),
-                IMAGETYPE_PNG => imagecreatefrompng($sourcePath),
-                IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($sourcePath) : null,
-                default => null,
-            };
-
-            if (!$source) {
-                return null;
-            }
-
-            $maxSize = 320;
-            $ratio = min($maxSize / $width, $maxSize / $height, 1);
-            $newWidth = max(1, (int) round($width * $ratio));
-            $newHeight = max(1, (int) round($height * $ratio));
-
-            $thumb = imagecreatetruecolor($newWidth, $newHeight);
-            imagecopyresampled($thumb, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-            $tmpPath = storage_path('app/tg_thumb_' . uniqid() . '.jpg');
-            imagejpeg($thumb, $tmpPath, 85);
-
-            imagedestroy($source);
-            imagedestroy($thumb);
-
-            return $tmpPath;
-        } catch (\Throwable $e) {
-            return null;
-        }
+        $telegram->send($caption);
     }
 
     /**
@@ -322,18 +265,14 @@ class EmployeeAttendanceController extends Controller
         string $type,
         \Illuminate\Support\Carbon $scannedAt,
         string $ip,
-        ?string $location = null
+        ?string $location = null,
+        ?string $workSummary = null
     ): string {
         $employee = $user->employee;
-        $label = $type === 'in' ? 'Check In' : 'Check Out';
+        $label = $type === 'in' ? 'CHECK IN' : 'CHECK OUT';
         $emoji = $type === 'in' ? '🟢' : '🔴';
 
-        $lines = [
-            '📋 <b>Attendance Update</b>',
-            '',
-            "{$emoji} <b>" . e($label) . '</b>',
-            '👤 ' . e($user->name),
-        ];
+        $details = ['👤 ' . e($user->name)];
 
         if ($employee) {
             $role = trim(implode(' · ', array_filter([
@@ -342,18 +281,36 @@ class EmployeeAttendanceController extends Controller
             ])));
 
             if ($role !== '') {
-                $lines[] = '🏢 ' . e($role);
+                $details[] = '🏢 ' . e($role);
             }
         }
 
-        $lines[] = '🕒 ' . $scannedAt->format('d M Y, h:i A');
+        $details[] = '🕒 ' . $scannedAt->format('d M Y, h:i A');
 
         if ($location) {
-            $lines[] = '📍 ' . e($location);
+            $details[] = '📍 ' . e($location);
+        }
+
+        // <blockquote> is the only HTML tag Telegram's Bot API renders with
+        // a colored accent bar - the closest thing to "color" available in
+        // plain-text messages, so the details (and, on checkout, the work
+        // summary) each live inside their own one.
+        $lines = [
+            "{$emoji} <b>{$label}</b>",
+            '',
+            '<blockquote>' . implode("\n", $details) . '</blockquote>',
+        ];
+
+        if ($workSummary) {
+            $lines[] = '';
+            $lines[] = '📝 <b>Work Summary</b>';
+            // Telegram's HTML mode doesn't support <br> - a plain newline in
+            // the text itself is what it renders as a line break.
+            $lines[] = '<blockquote>' . e($workSummary) . '</blockquote>';
         }
 
         $lines[] = '';
-        $lines[] = '<code>IP ' . e($ip) . '</code>';
+        $lines[] = '🌐 <code>' . e($ip) . '</code>';
 
         return implode("\n", $lines);
     }

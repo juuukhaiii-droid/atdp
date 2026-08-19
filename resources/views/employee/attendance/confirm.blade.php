@@ -27,6 +27,20 @@
 
     <form method="POST" action="{{ route('attendance.submit', $token) }}">
         @csrf
+
+        @if ($nextAction === 'out')
+            <div class="app-card work-summary-card mb-3">
+                <div class="card-body">
+                    <label for="work_summary" class="form-label fw-semibold mb-2">
+                        <i class="fas fa-list-check me-1"></i> What did you work on today?
+                    </label>
+                    <textarea name="work_summary" id="work_summary" class="form-control" rows="4"
+                        placeholder="e.g. Restocked dough fridge, fixed POS printer jam&hellip;">{{ old('work_summary') }}</textarea>
+                    <small class="text-muted d-block mt-1">Optional &mdash; included in the check-out alert.</small>
+                </div>
+            </div>
+        @endif
+
         <button type="submit" id="checkinBtn" class="btn btn-scan-cta w-100 py-3 fw-bold confirm-btn" disabled>
             <i class="fas fa-check me-2"></i>
             Confirm {{ $nextAction === 'in' ? 'Check In' : 'Check Out' }}
@@ -110,6 +124,19 @@
         opacity: 0.5;
         cursor: not-allowed;
         box-shadow: none;
+    }
+
+    .work-summary-card .card-body { padding: 14px 16px; }
+
+    .work-summary-card textarea {
+        border-radius: 12px;
+        border-color: var(--border-soft);
+        resize: vertical;
+    }
+
+    .work-summary-card textarea:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.12);
     }
 
     .confirm-back-btn {

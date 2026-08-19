@@ -16,6 +16,7 @@ class Attendance extends Model
         'type',
         'scanned_at',
         'ip_address',
+        'work_summary',
     ];
 
     protected $casts = [
