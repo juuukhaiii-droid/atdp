@@ -35,19 +35,13 @@ class AttendanceSummaryService
         return $summaries->sortByDesc('attendance_date')->values();
     }
 
-    /**
-     * Finds a single day's summary for one employee, or null if they have
-     * no scan events and no manual correction that day.
-     */
+
     public function forEmployeeOnDate(int $employeeId, string $date): ?object
     {
         return $this->summarize(['employee_id' => $employeeId, 'date' => $date])->first();
     }
 
-    /**
-     * Creates or updates the admin-entered correction for one employee's
-     * day, superseding whatever the raw scan events say for that date.
-     */
+  
     public function upsertOverride(
         Employee $employee,
         string $date,
