@@ -6,13 +6,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Without this, mobile Safari/Chrome restore authenticated pages from
- * back-forward cache after logout - the URL bar shows /login but the
- * previous dashboard/profile HTML is still on screen, since no real
- * request was made. Forcing no-store means the browser must always
- * re-fetch (and re-check auth) instead of showing a stale snapshot.
- */
 class PreventBackHistoryCache
 {
     public function handle(Request $request, Closure $next): Response
