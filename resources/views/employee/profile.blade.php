@@ -103,6 +103,13 @@
         </div>
     @endif
 
+    <form method="POST" action="{{ route('logout') }}" class="mt-3">
+        @csrf
+        <button type="submit" class="btn-logout">
+            <i class="fas fa-arrow-right-from-bracket me-2"></i>Logout
+        </button>
+    </form>
+
 @endsection
 
 @push('styles')
@@ -213,5 +220,21 @@
     }
 
     .info-value { font-weight: 700; font-size: 14px; }
+
+    .btn-logout {
+        width: 100%;
+        border: 1px solid #fecaca;
+        background: #fff;
+        color: var(--brand-primary);
+        font-weight: 700;
+        font-size: 14px;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        transition: background 0.15s ease;
+    }
+
+    .btn-logout:hover, .btn-logout:active {
+        background: #fef2f2;
+    }
 </style>
 @endpush

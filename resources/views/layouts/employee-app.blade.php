@@ -223,24 +223,6 @@
     </style>
 </head>
 <body>
-    {{-- App Bar --}}
-    <header class="app-bar">
-        <div>
-            <div class="app-bar-greeting">
-                @php $hour = now()->hour; @endphp
-                {{ $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening') }}, {{ explode(' ', auth()->user()->name)[0] }}
-            </div>
-            <div class="app-bar-sub">{{ now()->format('l, d M Y') }}</div>
-        </div>
-        <div class="app-bar-actions">
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
-                <button type="submit" class="app-bar-icon-btn" title="Logout">
-                    <i class="fas fa-arrow-right-from-bracket"></i>
-                </button>
-            </form>
-        </div>
-    </header>
 
     {{-- Content --}}
     <main class="app-content">

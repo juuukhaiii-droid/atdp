@@ -332,7 +332,7 @@
     <div class="auth-shell">
         <div class="auth-brand">
             <div class="auth-brand-mark">
-                <span class="auth-brand-icon"><i class="fas fa-store"></i></span>
+                
                 <div>
                     <div class="auth-brand-title">ភីហ្សា គ្រួសាររីករាយ</div>
                     <div class="auth-brand-subtitle">PizzaHappyFamily</div>
