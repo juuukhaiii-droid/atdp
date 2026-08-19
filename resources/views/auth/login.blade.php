@@ -119,13 +119,18 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between mb-4 mt-3">
+        <div class="d-flex align-items-center justify-content-between mt-3">
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember" checked>
                 <label class="form-check-label" for="remember" style="font-size: 14px; color: var(--text-soft);">
                     Remember me
                 </label>
             </div>
+        </div>
+
+        <div id="remember-tip" class="remember-tip" style="display: {{ $activeMode === 'employee' ? 'flex' : 'none' }};">
+            <i class="fas fa-circle-info"></i>
+            <span>Always open this app the same way (either this home screen icon or this browser) so "Remember me" keeps working.</span>
         </div>
 
         <button type="submit" class="btn btn-brand w-100 text-white py-2">
@@ -188,6 +193,23 @@
         cursor: not-allowed;
         transform: none;
     }
+
+    .remember-tip {
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: var(--text-soft);
+        background: var(--bg-soft);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+    }
+
+    .remember-tip i {
+        margin-top: 2px;
+        color: var(--brand-primary);
+    }
 </style>
 @endpush
 
@@ -218,6 +240,7 @@
         const adminFields = document.getElementById('admin-fields');
         const loginType = document.getElementById('login_type');
         const forgotLink = document.getElementById('forgot-password-link');
+        const rememberTip = document.getElementById('remember-tip');
 
         modeButtons.forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -232,6 +255,9 @@
                 adminFields.style.display = isEmployee ? 'none' : 'block';
                 if (forgotLink) {
                     forgotLink.style.display = isEmployee ? 'none' : 'inline';
+                }
+                if (rememberTip) {
+                    rememberTip.style.display = isEmployee ? 'flex' : 'none';
                 }
 
                 document.getElementById('full_name').required = isEmployee;

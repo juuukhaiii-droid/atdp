@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\PreventBackHistoryCache;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,6 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
             // in. This sends them to their role's dashboard instead.
             'guest' => RedirectIfAuthenticated::class,
         ]);
+
+        // Mobile Safari/Chrome restore authenticated pages from
+        // back-forward cache after logout, showing a stale dashboard/profile
+        // snapshot even though the server-side session is gone. Applied to
+        // the whole web group since every route here is dynamic/auth-aware
+        // - none of it benefits from browser caching.
+        $middleware->web(append: [PreventBackHistoryCache::class]);
 
         // Production sits behind Hostinger's edge/CDN (hcdn). Without this,
         // $request->ip() returns the edge server's IP instead of the real
