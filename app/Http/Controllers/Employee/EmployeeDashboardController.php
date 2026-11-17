@@ -36,7 +36,6 @@ class EmployeeDashboardController extends Controller
             ->first();
 
         $summaries = $summary->summarize(['employee_id' => $employee->id]);
-        $totalAttendance = $summaries->whereIn('status', ['present', 'late'])->count();
         $monthly = $summaries->filter(fn ($record) => str_starts_with($record->attendance_date, now()->format('Y-m')));
         $presentDays = $monthly->whereIn('status', ['present', 'late'])->count();
         $lateDays = $monthly->where('status', 'late')->count();
@@ -57,7 +56,6 @@ class EmployeeDashboardController extends Controller
             'employee',
             'todayIn',
             'todayOut',
-            'totalAttendance',
             'presentDays',
             'lateDays',
             'monthlyDays',

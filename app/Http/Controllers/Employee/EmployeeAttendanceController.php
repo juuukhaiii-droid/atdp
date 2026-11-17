@@ -185,7 +185,7 @@ class EmployeeAttendanceController extends Controller
     }
 
     /**
-     * Sends the attendance alert as a plain text message.
+     * Sends the HTML-formatted attendance alert.
      */
     private function notifyTelegram(TelegramService $telegram, string $caption): void
     {

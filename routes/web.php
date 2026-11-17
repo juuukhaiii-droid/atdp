@@ -4,13 +4,11 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ShiftController;
 use App\Http\Controllers\Admin\AttendancePointController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\AttendanceController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Employee\EmployeeDashboardController;
 use App\Http\Controllers\Employee\EmployeeAttendanceController;
 use App\Http\Controllers\Employee\EmployeeProfileController;
-use App\Http\Controllers\Employee\EmployeeReportController;
 use App\Http\Controllers\PublicFileController;
 
 
