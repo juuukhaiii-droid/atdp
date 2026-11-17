@@ -78,37 +78,22 @@ class AttendanceSummaryService
             $query->where('user_id', $employee?->user_id ?? 0);
         }
 
-        if (!empty($filters['date'])) {
-            $query->whereDate('scanned_at', $filters['date']);
-        }
-
-        if (!empty($filters['date_from'])) {
-            $query->whereDate('scanned_at', '>=', $filters['date_from']);
-        }
-
-        if (!empty($filters['date_to'])) {
-            $query->whereDate('scanned_at', '<=', $filters['date_to']);
-        }
-
-        if (!empty($filters['month'])) {
-            $parts = explode('-', $filters['month']);
-            if (count($parts) === 2) {
-                $query->whereYear('scanned_at', $parts[0])->whereMonth('scanned_at', $parts[1]);
-            }
-        }
-
-        if (!empty($filters['year'])) {
-            $query->whereYear('scanned_at', $filters['year']);
-        }
+        $startDate = $filters['date'] ?? $filters['date_from'] ?? (!empty($filters['month']) ? $filters['month'] . '-01' : (!empty($filters['year']) ? $filters['year'] . '-01-01' : null));
+        $endDate = $filters['date'] ?? $filters['date_to'] ?? (!empty($filters['month']) ? Carbon::parse($filters['month'] . '-01')->endOfMonth()->toDateString() : (!empty($filters['year']) ? $filters['year'] . '-12-31' : null));
+        if ($startDate) $query->where('scanned_at', '>=', Carbon::parse($startDate)->startOfDay());
+        // Include next morning for overnight shifts; exact workday filters apply below.
+        if ($endDate) $query->where('scanned_at', '<', Carbon::parse($endDate)->startOfDay()->addDays(2));
+        $workday = app(AttendanceWorkday::class);
 
         $events = $query->orderBy('scanned_at')->get()
             ->filter(fn ($event) => $event->user?->employee);
 
         return $events
-            ->groupBy(fn ($event) => $event->user->employee->id . '|' . $event->scanned_at->toDateString())
-            ->map(function (Collection $dayEvents) {
+            ->groupBy(fn ($event) => $event->user->employee->id . '|' . $workday->date($event->user->employee, $event->scanned_at))
+            ->map(function (Collection $dayEvents) use ($workday) {
                 $first = $dayEvents->first();
                 $employee = $first->user->employee;
+                $date = $workday->date($employee, $first->scanned_at);
 
                 $checkIn = $dayEvents->firstWhere('type', 'in');
                 $checkOut = $dayEvents->where('type', 'out')->last();
@@ -116,10 +101,10 @@ class AttendanceSummaryService
                 [$status, $lateMinutes] = $this->resolveStatus($employee, $checkIn?->scanned_at);
 
                 return (object) [
-                    'id' => $employee->id . '|' . $first->scanned_at->toDateString(),
+                    'id' => $employee->id . '|' . $date,
                     'employee_id' => $employee->id,
                     'employee' => $employee,
-                    'attendance_date' => $first->scanned_at->toDateString(),
+                    'attendance_date' => $date,
                     'check_in_time' => $checkIn?->scanned_at->format('H:i:s'),
                     'check_out_time' => $checkOut?->scanned_at->format('H:i:s'),
                     'attendancePoint' => ($checkIn ?? $first)->attendancePoint,
@@ -130,12 +115,22 @@ class AttendanceSummaryService
                     'created_at' => $first->scanned_at,
                 ];
             })
+            ->filter(fn ($record) => $this->matchesDateFilters($record->attendance_date, $filters))
             ->values();
     }
 
     /**
      * @return Collection<int, object>
      */
+    private function matchesDateFilters(string $date, array $filters): bool
+    {
+        return (empty($filters['date']) || $date === $filters['date'])
+            && (empty($filters['date_from']) || $date >= $filters['date_from'])
+            && (empty($filters['date_to']) || $date <= $filters['date_to'])
+            && (empty($filters['month']) || str_starts_with($date, $filters['month'] . '-'))
+            && (empty($filters['year']) || str_starts_with($date, $filters['year'] . '-'));
+    }
+
     private function loadOverrides(array $filters): Collection
     {
         $query = AttendanceRecord::with(['employee.department', 'employee.shift', 'attendancePoint']);
@@ -196,7 +191,7 @@ class AttendanceSummaryService
     private function resolveStatus(Employee $employee, ?Carbon $checkInAt): array
     {
         if (!$checkInAt) {
-            return ['present', 0];
+            return ['absent', 0];
         }
 
         $lateAfter = $employee->shift?->late_after;
@@ -205,10 +200,14 @@ class AttendanceSummaryService
             return ['present', 0];
         }
 
-        $threshold = Carbon::parse($checkInAt->toDateString() . ' ' . $lateAfter);
+        $workDate = app(AttendanceWorkday::class)->date($employee, $checkInAt);
+        $threshold = Carbon::parse($workDate . ' ' . $lateAfter);
+        if ($employee->shift->end_time < $employee->shift->start_time && $lateAfter < $employee->shift->start_time) {
+            $threshold->addDay();
+        }
 
         if ($checkInAt->gt($threshold)) {
-            return ['late', $threshold->diffInMinutes($checkInAt)];
+            return ['late', (int) floor($threshold->diffInMinutes($checkInAt))];
         }
 
         return ['present', 0];

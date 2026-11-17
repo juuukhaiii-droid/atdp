@@ -41,7 +41,7 @@ class EmployeeController extends Controller
         'department_id' => ['required', 'exists:departments,id'],
         'shift_id' => ['required', 'exists:shifts,id'],
         'position' => ['nullable', 'string', 'max:255'],
-        'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         'status' => ['required', 'in:active,inactive'],
     ]);
 
@@ -50,7 +50,7 @@ class EmployeeController extends Controller
         $user = User::create([
             'name' => $validated['full_name'],
             'email' => $validated['email'],
-            'password' => Hash::make('12345678'),
+            'password' => Hash::make(\Illuminate\Support\Str::random(40)),
             'role' => 'employee',
         ]);
 
@@ -72,6 +72,7 @@ class EmployeeController extends Controller
 }
     public function show(Request $request, Employee $employee, AttendanceSummaryService $attendanceSummary)
     {
+        $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
         $employee->load(['department', 'shift']);
 
         $filters = ['employee_id' => $employee->id];
@@ -133,7 +134,7 @@ class EmployeeController extends Controller
     public function updateAttendance(Request $request, Employee $employee, AttendanceSummaryService $attendanceSummary)
     {
         $validated = $request->validate([
-            'date' => ['required', 'date'],
+            'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'check_in_time' => ['nullable', 'date_format:H:i'],
             'check_out_time' => ['nullable', 'date_format:H:i'],
             'attendance_point_id' => ['required', 'exists:attendance_points,id'],
@@ -152,7 +153,7 @@ class EmployeeController extends Controller
         return redirect()
             ->route('admin.employees.show', [
                 $employee,
-                'month' => \Carbon\Carbon::parse($validated['date'])->format('Y-m'),
+                'date' => $validated['date'],
             ])
             ->with('success', 'Attendance updated for ' . $validated['date'] . '.');
     }
@@ -179,7 +180,7 @@ class EmployeeController extends Controller
         'department_id' => ['required', 'exists:departments,id'],
         'shift_id' => ['required', 'exists:shifts,id'],
         'position' => ['nullable', 'string', 'max:255'],
-        'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         'status' => ['required', 'in:active,inactive'],
     ]);
 
@@ -200,11 +201,13 @@ class EmployeeController extends Controller
     // employees.email is a separate column from the linked users.email
     // (the one actually checked at login) - keep them in sync so editing
     // an employee's email here doesn't silently lock them out.
-    if (!empty($validated['email']) && $employee->user && $employee->user->email !== $validated['email']) {
-        $employee->user->update(['email' => $validated['email']]);
-    }
-
-    $employee->update($validated);
+    DB::transaction(function () use ($employee, $validated) {
+        $employee->user?->update([
+            'name' => $validated['full_name'],
+            'email' => ($validated['email'] ?? null) ?: $employee->user->email,
+        ]);
+        $employee->update($validated);
+    });
 
     return redirect()->route('admin.employees.index')
         ->with('success', 'Employee updated successfully.');
@@ -212,6 +215,9 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
+        if ($employee->attendanceRecords()->exists() || \App\Models\Attendance::where('user_id', $employee->user_id)->exists()) {
+            return back()->withErrors(['employee' => 'This employee has attendance history. Set their status inactive instead of deleting them.']);
+        }
         DB::transaction(function () use ($employee) {
             $user = $employee->user;
             $employee->delete();

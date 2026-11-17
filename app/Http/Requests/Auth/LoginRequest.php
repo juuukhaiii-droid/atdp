@@ -14,6 +14,21 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('identifier') && is_string($this->input('identifier'))) {
+            $identifier = trim($this->input('identifier'));
+            $emailLogin = str_contains($identifier, '@');
+            $this->merge([
+                'identifier' => $identifier,
+                'login_type' => $emailLogin ? 'admin' : 'employee',
+                'email' => $emailLogin ? $identifier : null,
+                'full_name' => $emailLogin ? null : $identifier,
+                'pin' => $emailLogin ? null : $this->input('password'),
+            ]);
+        }
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -34,6 +49,17 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->has('identifier')) {
+            return [
+                'identifier' => $this->isEmployeeLogin()
+                    ? ['required', 'string', 'max:255']
+                    : ['required', 'email:filter', 'max:255'],
+                'password' => $this->isEmployeeLogin()
+                    ? ['required', 'digits:4']
+                    : ['required', 'string'],
+            ];
+        }
+
         if ($this->isEmployeeLogin()) {
             return [
                 'full_name' => ['required', 'string'],
@@ -52,6 +78,14 @@ class LoginRequest extends FormRequest
      *
      * @throws ValidationException
      */
+    public function messages(): array
+    {
+        return [
+            'identifier.email' => 'Enter your full admin email address, or use your employee full name and PIN.',
+            'password.digits' => 'Use your employee name with a 4-digit PIN, or enter your full admin email and password.',
+        ];
+    }
+
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
@@ -61,7 +95,7 @@ class LoginRequest extends FormRequest
             return;
         }
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! Auth::attempt(array_merge($this->only('email', 'password'), ['role' => 'admin']), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -84,11 +118,15 @@ class LoginRequest extends FormRequest
         $name = trim((string) $this->input('full_name'));
         $pin = (string) $this->input('pin');
 
-        $employee = Employee::whereRaw('LOWER(full_name) = ?', [Str::lower($name)])
+        $matches = Employee::whereRaw('LOWER(full_name) = ?', [Str::lower($name)])
+            ->where('status', 'active')
             ->whereNotNull('user_id')
             ->with('user')
             ->get()
-            ->first(fn (Employee $candidate) => $candidate->user && Hash::check($pin, $candidate->pin));
+            ->filter(fn (Employee $candidate) => $candidate->user?->role === 'employee' && Hash::check($pin, $candidate->pin));
+
+        // Never sign into the wrong account when both the name and PIN match.
+        $employee = $matches->count() === 1 ? $matches->first() : null;
 
         if (! $employee) {
             RateLimiter::hit($this->throttleKey());

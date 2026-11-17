@@ -332,7 +332,7 @@
     <div class="auth-shell">
         <div class="auth-brand">
             <div class="auth-brand-mark">
-                
+
                 <div>
                     <div class="auth-brand-title">ភីហ្សា គ្រួសាររីករាយ</div>
                     <div class="auth-brand-subtitle">PizzaHappyFamily</div>
@@ -348,7 +348,7 @@
 
                 <ul class="auth-feature-list">
                     <li><i class="fas fa-qrcode"></i> Scan-to-check-in with QR codes</li>
-                    <li><i class="fas fa-wifi"></i> Office WiFi verified attendance</li>
+                    <li><i class="fas fa-location-dot"></i> GPS location verified attendance</li>
                     <li><i class="fab fa-telegram"></i> Instant Telegram alerts</li>
                 </ul>
             </div>
@@ -361,7 +361,7 @@
         <div class="auth-form-side">
             <div class="auth-card">
                 <div class="auth-mobile-mark">
-                    <span class="auth-mobile-mark-icon"><i class="fas fa-store"></i></span>
+
                     <div>
                         <div class="auth-mobile-mark-title">ភីហ្សា គ្រួសាររីករាយ</div>
                         <div class="auth-mobile-mark-subtitle">PizzaHappyFamily</div>

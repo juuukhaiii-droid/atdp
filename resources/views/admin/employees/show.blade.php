@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4" x-data="attendanceEditor()">
+<div class="max-w-7xl mx-auto px-4" x-data="attendanceEditor()" @keydown.escape.window="modalOpen = false">
     @php
         $today = now()->toDateString();
     @endphp
@@ -167,7 +167,7 @@
                                 $cardClass = 'late-day';
                                 $mark = '!';
                                 $label = 'Late';
-                            } else {
+                            } elseif ($record->status === 'present') {
                                 $cardClass = 'attended';
                                 $mark = '✓';
                                 $label = 'Attend';
@@ -196,6 +196,7 @@
                             <i class="fas fa-note-sticky attendance-day-note-flag" title="{{ $record->note }}"></i>
                         @endif
 
+                        <div class="attendance-day-weekday" lang="km">{{ ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'][\Carbon\Carbon::parse($cellDate)->dayOfWeek] }}</div>
                         <div class="attendance-day-number">{{ $day }}</div>
 
                         <div class="attendance-day-mark">{{ $mark }}</div>
@@ -294,7 +295,7 @@
     </div>
 
     {{-- Shared edit modal for both the calendar cells and the table rows --}}
-    <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Edit employee attendance">
         <div class="absolute inset-0 bg-black/50" @click="modalOpen = false"></div>
 
         <form method="POST" action="{{ route('admin.employees.attendance.update', $employee) }}"
@@ -379,6 +380,15 @@
     .attendance-day-card.absent {
         background: #fef2f2;
         border-color: #fecaca;
+    }
+
+    .attendance-day-weekday {
+        font-family: 'Noto Sans Khmer', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.8;
+        color: #475569;
+        margin: 18px 0 3px;
     }
 
     .attendance-day-number {

@@ -23,6 +23,10 @@ class RoleMiddleware
             abort(403);
         }
 
+        if ($role === 'employee' && $request->user()->employee?->status !== 'active') {
+            abort(403, 'An active employee account is required.');
+        }
+
         return $next($request);
     }
 }

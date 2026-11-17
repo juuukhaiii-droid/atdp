@@ -52,6 +52,9 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department)
     {
+        if ($department->employees()->exists() || \App\Models\AttendancePoint::where('department_id', $department->id)->exists()) {
+            return back()->withErrors(['department' => 'This department has employees or QR checkpoints. Reassign them before deleting it.']);
+        }
         $department->delete();
 
         return redirect()->route('admin.departments.index')

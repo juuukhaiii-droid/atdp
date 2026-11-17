@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4">
@@ -24,29 +24,29 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div class="md:col-span-12">
-                        <label class="block font-semibold text-sm mb-1.5">Shift Name</label>
-                        <input type="text" name="name" placeholder="Example: Office Shift" required
-                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <label class="block font-semibold text-sm mb-1.5" for="admin-field-name-1">Shift Name</label>
+                        <input id="admin-field-name-1" type="text" name="name" placeholder="Example: Office Shift" required
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10" value="{{ old('name') }}">
                     </div>
 
                     <div class="md:col-span-4">
-                        <label class="block font-semibold text-sm mb-1.5">Start Time</label>
-                        <input type="time" name="start_time" required
-                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <label class="block font-semibold text-sm mb-1.5" for="admin-field-start_time-2">Start Time</label>
+                        <input id="admin-field-start_time-2" type="time" name="start_time" required
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10" value="{{ old('start_time') }}">
                         <div class="text-ink-soft text-xs mt-1.5">Employee normal work start time</div>
                     </div>
 
                     <div class="md:col-span-4">
-                        <label class="block font-semibold text-sm mb-1.5">End Time</label>
-                        <input type="time" name="end_time" required
-                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <label class="block font-semibold text-sm mb-1.5" for="admin-field-end_time-3">End Time</label>
+                        <input id="admin-field-end_time-3" type="time" name="end_time" required
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10" value="{{ old('end_time') }}">
                         <div class="text-ink-soft text-xs mt-1.5">Employee normal work finish time</div>
                     </div>
 
                     <div class="md:col-span-4">
-                        <label class="block font-semibold text-sm mb-1.5">Late After</label>
-                        <input type="time" name="late_after" required
-                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <label class="block font-semibold text-sm mb-1.5" for="admin-field-late_after-4">Late After</label>
+                        <input id="admin-field-late_after-4" type="time" name="late_after" required
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10" value="{{ old('late_after') }}">
                         <div class="text-ink-soft text-xs mt-1.5">Attendance after this time is late</div>
                     </div>
                 </div>

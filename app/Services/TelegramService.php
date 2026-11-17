@@ -12,14 +12,19 @@ class TelegramService
 
     public function __construct()
     {
-        $this->token = env('TELEGRAM_BOT_TOKEN');
-        $this->chatId = env('TELEGRAM_CHAT_ID');
+        $this->token = config('services.telegram.bot_token');
+        $this->chatId = config('services.telegram.chat_id');
     }
 
     public function send($message)
     {
+        if (!$this->token || !$this->chatId) {
+            Log::warning('Telegram attendance alert skipped: bot token or chat ID is not configured.');
+            return null;
+        }
+
         try {
-            return Http::post(
+            $response = Http::connectTimeout(3)->timeout(5)->post(
                 "https://api.telegram.org/bot{$this->token}/sendMessage",
                 [
                     'chat_id' => $this->chatId,
@@ -28,8 +33,18 @@ class TelegramService
                     'disable_web_page_preview' => true,
                 ]
             );
+
+            if (!$response->successful() || $response->json('ok') !== true) {
+                Log::warning('Telegram attendance alert rejected.', [
+                    'http_status' => $response->status(),
+                    'telegram_error_code' => $response->json('error_code'),
+                ]);
+            }
+
+            return $response;
         } catch (\Exception $e) {
-            Log::error('Telegram Service Error: ' . $e->getMessage());
+            // HTTP exception messages can contain the bot token in the request URL.
+            Log::error('Telegram attendance alert could not be delivered.', ['exception' => get_class($e)]);
             return null;
         }
     }

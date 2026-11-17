@@ -1,0 +1,27 @@
+.attendance-scanner h1{font-size:21px;font-weight:700;margin:0 0 10px;color:#233044}
+.attendance-scanner>p{font-size:14px;line-height:1.8;color:#526175;margin-bottom:16px}
+.scanner-status,.scanner-notice{padding:16px;border:1px solid #cad5e3;border-radius:14px;background:#fff;margin-bottom:16px;font-size:14px;line-height:1.8;color:#344a66}
+.scanner-status[data-error=true]{background:#fff0ed;border-color:#e3b3a7;color:#963d2c}
+.scanner-notice{background:#fff8e6;border-color:#dfca96;color:#765716}.scanner-notice p{margin:6px 0 10px}
+.scanner-camera{position:relative;overflow:hidden;border-radius:18px;background:#18212c;aspect-ratio:4/5;margin-bottom:16px}
+.scanner-camera video{width:100%;height:100%;object-fit:cover;display:block}
+.scanner-target{position:absolute;left:18%;top:22%;width:64%;aspect-ratio:1;border:3px solid white;border-radius:18px;box-shadow:0 0 0 999px #0003;pointer-events:none}
+.scanner-actions{display:flex;flex-wrap:wrap;gap:10px}
+.scanner-actions button,.scanner-photo,.scanner-notice button,.scanner-fallback{display:flex;align-items:center;justify-content:center;min-height:46px;padding:11px 15px;border-radius:10px;border:1px solid #bcc9d9;background:white;color:#34445a;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}
+.scanner-actions [data-camera-start]{background:#b84129;border-color:#b84129;color:white;flex:1}
+.scanner-photo{position:relative;overflow:hidden;flex:1;white-space:nowrap}.scanner-photo input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.scanner-photo:focus-within,.attendance-scanner :is(button,a):focus-visible{outline:3px solid #b84129;outline-offset:3px}
+.scanner-actions button:disabled{background:#697585;border-color:#697585;color:white;cursor:wait}
+.attendance-scanner .scanner-help{font-size:13px;margin:18px 0 12px}
+.attendance-scanner [hidden]{display:none!important}
+.scanner-fallback{margin-bottom:16px}
+.attendance-scanner h1{text-align:center;font-size:27px;margin:6px 0}
+.attendance-scanner>p{text-align:center;margin:0 0 22px}
+.scanner-notice{padding:10px 14px;font-size:13px;background:#fffaf3;border-color:#e2d7c7}
+.scanner-notice summary{cursor:pointer;font-weight:600}.scanner-notice p{font-size:13px;margin-top:8px}
+.scanner-status{font-size:13px;line-height:1.7;padding:12px 14px;background:#edf2f8;border:0;border-radius:12px}
+.scanner-camera{aspect-ratio:1;max-height:400px}
+.scanner-actions button{font-size:16px;min-height:52px;border-radius:12px}
+.scanner-other-options{margin:18px 0 10px}.scanner-other-options summary{text-align:center;cursor:pointer;color:#596a80;font-size:13px;padding:8px}
+.scanner-other-options .scanner-photo{margin:10px 0;font-size:14px;flex:none}
+.scanner-other-options .scanner-fallback{font-size:14px}

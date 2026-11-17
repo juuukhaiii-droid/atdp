@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4">
@@ -24,15 +24,15 @@
 
                 <div class="grid grid-cols-1 gap-4">
                     <div>
-                        <label class="block font-semibold text-sm mb-1.5">Department Name</label>
-                        <input type="text" name="name" placeholder="Example: Office" required
-                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <label class="block font-semibold text-sm mb-1.5" for="admin-field-name-1">Department Name</label>
+                        <input id="admin-field-name-1" type="text" name="name" placeholder="Example: Office" required
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10" value="{{ old('name') }}">
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-sm mb-1.5">Description</label>
-                        <input type="text" name="description" placeholder="Example: Main office team"
-                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <label class="block font-semibold text-sm mb-1.5" for="admin-field-description-2">Description</label>
+                        <input id="admin-field-description-2" type="text" name="description" placeholder="Example: Main office team"
+                            class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10" value="{{ old('description') }}">
                         <div class="text-ink-soft text-xs mt-1.5">Optional short description for this department</div>
                     </div>
                 </div>

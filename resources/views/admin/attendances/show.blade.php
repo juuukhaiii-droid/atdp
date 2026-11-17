@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-4">
@@ -94,5 +94,6 @@
             </div>
         </div>
     </div>
+    @include('admin.attendances.partials.location-events')
 </div>
 @endsection

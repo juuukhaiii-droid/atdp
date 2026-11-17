@@ -15,6 +15,15 @@ class AttendancePoint extends Model
         'qr_image',
         'status',
         'department_id',
+        'latitude',
+        'longitude',
+        'radius_meters',
+    ];
+
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
+        'radius_meters' => 'integer',
     ];
 
     public function attendanceRecords(): HasMany

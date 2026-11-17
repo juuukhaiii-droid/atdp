@@ -29,7 +29,6 @@
             --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
             --radius-lg: 20px;
             --radius-md: 14px;
-            --app-bar-h: 64px;
             --tab-bar-h: 68px;
         }
 
@@ -42,65 +41,11 @@
             color: var(--text-main);
             font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
             min-height: 100vh;
-            padding-top: calc(var(--app-bar-h) + env(safe-area-inset-top));
+            padding-top: env(safe-area-inset-top);
             padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom) + 12px);
         }
 
         .khmer-text { font-family: 'Noto Sans Khmer', sans-serif; }
-
-        /* ---- App Bar ---- */
-        .app-bar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: calc(var(--app-bar-h) + env(safe-area-inset-top));
-            padding-top: env(safe-area-inset-top);
-            background: linear-gradient(90deg, #111827 0%, #1f2937 100%);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-left: 18px;
-            padding-right: 10px;
-            z-index: 1030;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.12);
-        }
-
-        .app-bar-greeting {
-            font-weight: 700;
-            font-size: 15px;
-            line-height: 1.2;
-        }
-
-        .app-bar-sub {
-            font-size: 11.5px;
-            color: rgba(255,255,255,0.6);
-            margin-top: 1px;
-        }
-
-        .app-bar-actions {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .app-bar-icon-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 0;
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            transition: background 0.2s ease;
-        }
-
-        .app-bar-icon-btn:hover, .app-bar-icon-btn:active {
-            background: rgba(255,255,255,0.16);
-            color: #fff;
-        }
 
         /* ---- Content ---- */
         .app-content {
@@ -220,6 +165,7 @@
         @media (min-width: 576px) {
             .app-content { padding-top: 20px; }
         }
+
     </style>
 </head>
 <body>
@@ -270,7 +216,6 @@
         </a>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>
 </html>

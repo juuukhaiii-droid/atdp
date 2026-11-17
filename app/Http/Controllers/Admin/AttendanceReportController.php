@@ -12,6 +12,12 @@ class AttendanceReportController extends Controller
 {
     public function index(Request $request, AttendanceSummaryService $attendanceSummary): View
     {
+        $request->validate([
+            'employee_id' => ['nullable', 'integer', 'exists:employees,id'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'month' => ['nullable', 'date_format:Y-m'],
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+        ]);
         $employees = Employee::where('status', 'active')
             ->orderBy('full_name')
             ->get();

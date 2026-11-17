@@ -19,7 +19,7 @@
     {{-- Custom Styles Stack --}}
     @stack('styles')
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 text-ink font-body" x-data="{ navOpen: false }">
+<body class="min-h-screen flex flex-col bg-slate-50 text-ink font-body @yield('body-class')" x-data="{ navOpen: false }">
     {{-- Navigation Bar --}}
     <nav class="sticky top-0 z-50 bg-gradient-to-r from-brand-dark to-slate-800 shadow-lg" role="navigation" aria-label="Main navigation">
         <div class="px-4 py-3 flex items-center justify-between gap-3">

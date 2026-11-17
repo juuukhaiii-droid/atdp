@@ -19,9 +19,10 @@ class DashboardController extends Controller
 
         $daySummaries = $attendanceSummary->summarize(['date' => $selectedDate]);
 
-        $presentToday = $daySummaries->count();
+        $activeSummaries = $daySummaries->filter(fn ($record) => $record->employee->status === 'active');
+        $presentToday = $activeSummaries->whereIn('status', ['present', 'late'])->count();
 
-        $lateToday = $daySummaries->where('status', 'late')->count();
+        $lateToday = $activeSummaries->where('status', 'late')->count();
 
         $absentToday = max($totalEmployees - $presentToday, 0);
 
@@ -41,9 +42,9 @@ class DashboardController extends Controller
      * Falls back to today whenever the query param is missing or isn't a
      * real date, rather than letting an invalid ?date= value 500 the page.
      */
-    private function resolveDate(?string $date): string
+    private function resolveDate(mixed $date): string
     {
-        if (!$date) {
+        if (!is_string($date) || !$date) {
             return now()->toDateString();
         }
 

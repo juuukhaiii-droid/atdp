@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4">
@@ -20,12 +20,11 @@
     @endif
 
     <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
-        <div class="px-5 sm:px-6 py-4 border-b border-slate-200 font-bold">
-            Employee List
-        </div>
 
+
+        <x-admin-list-tools target="admin-employees-table" title="Employee directory" :count="$employees->count()" />
         <div class="overflow-x-auto">
-            <table class="w-full text-sm">
+            <table id="admin-employees-table" class="w-full text-sm">
                 <thead>
                     <tr class="bg-slate-50">
                         <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Employee</th>
@@ -38,7 +37,7 @@
                 </thead>
                 <tbody>
                     @forelse($employees as $employee)
-                        <tr class="hover:bg-slate-50/80 align-middle">
+                        <tr data-admin-row class="hover:bg-slate-50/80 align-middle">
                             <td class="px-3.5 py-4 border-b border-slate-100">
                                 <div class="flex flex-col">
                                     <span class="font-semibold">{{ $employee->full_name }}</span>

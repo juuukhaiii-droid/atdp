@@ -7,7 +7,7 @@
     @php
         $durationLabel = null;
         if ($todayIn && $todayOut) {
-            $minutes = $todayIn->scanned_at->diffInMinutes($todayOut->scanned_at);
+            $minutes = max(0, (int) floor($todayIn->scanned_at->diffInMinutes($todayOut->scanned_at)));
             $durationLabel = sprintf('%dh %02dm worked today', intdiv($minutes, 60), $minutes % 60);
         } elseif ($todayIn) {
             $durationLabel = 'Checked in ' . $todayIn->scanned_at->diffForHumans();
@@ -102,8 +102,8 @@
             <div class="app-card stat-tile">
                 <div class="card-body text-center">
                     <div class="stat-icon stat-icon-blue"><i class="fas fa-chart-line"></i></div>
-                    <div class="stat-tile-value">{{ $totalAttendance }}</div>
-                    <div class="stat-tile-label">Total Days</div>
+                    <div class="stat-tile-value">{{ $monthlyDays }}</div>
+                    <div class="stat-tile-label">Days Recorded</div>
                 </div>
             </div>
         </div>
@@ -126,21 +126,7 @@
     <div class="app-card">
         <div class="card-body p-0">
             @forelse ($recentActivity as $record)
-                <div class="activity-row {{ !$loop->last ? 'activity-row-border' : '' }}">
-                    <div class="activity-icon {{ $record->type === 'in' ? 'activity-icon-in' : 'activity-icon-out' }}">
-                        <i class="fas {{ $record->type === 'in' ? 'fa-arrow-right-to-bracket' : 'fa-arrow-right-from-bracket' }}"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="activity-title">{{ $record->type === 'in' ? 'Checked In' : 'Checked Out' }}</div>
-                        <div class="activity-sub">{{ $record->attendancePoint->name ?? 'Unknown location' }}</div>
-                    </div>
-                    <div class="text-end">
-                        <div class="activity-time">{{ $record->scanned_at->format('h:i A') }}</div>
-                        <div class="activity-date">
-                            {{ $record->scanned_at->isToday() ? 'Today' : ($record->scanned_at->isYesterday() ? 'Yesterday' : $record->scanned_at->format('d M')) }}
-                        </div>
-                    </div>
-                </div>
+                @include('employee.attendance.day')
             @empty
                 <div class="text-center text-muted py-4 small">No attendance records yet.</div>
             @endforelse

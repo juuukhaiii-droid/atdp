@@ -1,208 +1,101 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+@section('title', 'Dashboard · PizzaHappyFamily')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4">
-    @php
-        $isToday = $selectedDate === now()->toDateString();
-        $selectedCarbon = \Illuminate\Support\Carbon::parse($selectedDate);
-    @endphp
-
-    <div class="flex justify-between items-start flex-wrap gap-2 mb-6">
+@php
+    $selectedCarbon = \Illuminate\Support\Carbon::parse($selectedDate);
+    $isToday = $selectedDate === now()->toDateString();
+    $rate = $totalEmployees ? min(100, round($presentToday / $totalEmployees * 100)) : 0;
+    $onTime = max(0, $presentToday - $lateToday);
+@endphp
+<div class="dash-shell" x-data="{ search: '', status: 'all' }">
+    <header class="dash-heading">
         <div>
-            <h1 class="font-khmer text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">ប្រព័ន្ធត្រួតពិនិត្យវត្តមាន</h1>
-            <p class="font-khmer text-ink-soft">សង្ខេបព័ត៌មានវត្តមានបុគ្គលិកប្រចាំថ្ងៃ</p>
+            <h1 class="font-khmer">ផ្ទាំងគ្រប់គ្រងវត្តមាន<span class="heading-dot">.</span></h1>
+            <p>— តាមដានវត្តមានក្រុមការងាររបស់អ្នក។</p>
         </div>
-        <div class="text-right text-sm sm:text-base">
-            <div class="font-semibold">{{ now()->format('d M Y') }}</div>
-            <div class="text-ink-soft">{{ now()->format('h:i A') }}</div>
-        </div>
-    </div>
+        <a class="dash-button primary" href="{{ route('admin.employees.create') }}"><i class="fas fa-plus" aria-hidden="true"></i> បន្ថែមបុគ្គលិក</a>
+    </header>
 
-    <div class="rounded-brand-lg shadow-card bg-gradient-to-br from-white to-slate-50 mb-6 p-5">
-        <form method="GET" class="flex flex-wrap items-end gap-3.5">
-            <div class="w-11 h-11 rounded-brand-md bg-blue-100 text-blue-800 flex items-center justify-center text-lg shrink-0">
-                <i class="fas fa-calendar-week"></i>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold text-ink-soft uppercase tracking-wide">Viewing Date</label>
-                <input type="date" name="date" value="{{ $selectedDate }}" max="{{ now()->toDateString() }}"
-                    onchange="this.form.submit()"
-                    class="border border-slate-200 rounded-[10px] px-3 py-2.5 font-semibold text-sm min-w-[170px] bg-white focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
-            </div>
-
-            <div class="flex gap-1.5">
-                <a href="{{ route('admin.dashboard', ['date' => $selectedCarbon->copy()->subDay()->toDateString()]) }}"
-                    class="w-10 h-10 rounded-[10px] border border-slate-200 bg-white text-ink-soft flex items-center justify-center hover:bg-slate-100 hover:text-ink transition" title="Previous day">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-
-                <a href="{{ $isToday ? '#' : route('admin.dashboard', ['date' => $selectedCarbon->copy()->addDay()->toDateString()]) }}"
-                    class="w-10 h-10 rounded-[10px] border border-slate-200 bg-white text-ink-soft flex items-center justify-center hover:bg-slate-100 hover:text-ink transition {{ $isToday ? 'opacity-35 pointer-events-none' : '' }}" title="Next day">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            </div>
-
-            <button type="submit" class="inline-flex items-center gap-2 rounded-[10px] bg-brand-dark text-white font-bold text-sm px-[18px] py-2.5 hover:opacity-90 transition">
-                <i class="fas fa-magnifying-glass"></i> View
-            </button>
-
-            @unless ($isToday)
-                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center gap-2 rounded-[10px] bg-red-100 text-red-800 font-bold text-sm px-4 py-2.5 hover:bg-red-200 transition">
-                    <i class="fas fa-clock-rotate-left"></i> Back to Today
-                </a>
-            @endunless
+    <section class="dash-datebar" aria-label="Attendance date">
+        <div class="datebar-label"><span class="dash-icon"><i class="far fa-calendar" aria-hidden="true"></i></span><div><strong>{{ $isToday ? 'ទិដ្ឋភាពថ្ងៃនេះ' : 'ទិដ្ឋភាពតាមកាលបរិច្ឆេទ' }}</strong><small>{{ $selectedCarbon->format('l, d F Y') }}</small></div></div>
+        <form method="GET" action="{{ route('admin.dashboard') }}" class="date-controls">
+            <a class="date-arrow" href="{{ route('admin.dashboard', ['date' => $selectedCarbon->copy()->subDay()->toDateString()]) }}" aria-label="Previous day"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+            <label for="dashboard-date" class="sr-only">Viewing date</label>
+            <input id="dashboard-date" type="date" name="date" value="{{ $selectedDate }}" max="{{ now()->toDateString() }}" required>
+            @if($selectedDate < now()->toDateString())
+                <a class="date-arrow" href="{{ route('admin.dashboard', ['date' => $selectedCarbon->copy()->addDay()->toDateString()]) }}" aria-label="Next day"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+            @else
+                <button class="date-arrow" type="button" disabled aria-label="Next day"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+            @endif
+            <button class="dash-button dark" type="submit">មើលទិន្នន័យ <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            @unless($isToday)<a class="today-link" href="{{ route('admin.dashboard') }}">ថ្ងៃនេះ</a>@endunless
         </form>
-    </div>
+    </section>
 
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
-            <div class="flex items-center justify-between mb-3">
-                <div class="font-khmer text-ink-soft font-semibold text-sm">បុគ្គលិកសរុប</div>
-                <div class="w-11 h-11 rounded-brand-md bg-slate-200 text-slate-700 flex items-center justify-center text-lg">👥</div>
+    <section class="dash-stats" aria-label="Attendance statistics">
+        @foreach([
+            ['label' => 'បុគ្គលិកសរុប', 'value' => $totalEmployees, 'caption' => 'Active employees', 'icon' => 'fa-users', 'color' => 'neutral', 'tag' => 'TEAM'],
+            ['label' => 'មានវត្តមាន', 'value' => $presentToday, 'caption' => 'Checked in on selected date', 'icon' => 'fa-user-check', 'color' => 'green', 'tag' => 'PRESENT'],
+            ['label' => 'មកធ្វើការយឺត', 'value' => $lateToday, 'caption' => 'Included in present employees', 'icon' => 'fa-clock', 'color' => 'amber', 'tag' => 'LATE'],
+            ['label' => 'អវត្តមាន', 'value' => $absentToday, 'caption' => 'No attendance recorded', 'icon' => 'fa-user-xmark', 'color' => 'red', 'tag' => 'ABSENT'],
+        ] as $stat)
+            <article class="stat-card {{ $stat['color'] }}">
+                <div class="stat-top"><span class="stat-icon"><i class="fas {{ $stat['icon'] }}" aria-hidden="true"></i></span><span class="stat-tag">{{ $stat['tag'] }}</span></div>
+                <div class="stat-value">{{ str_pad($stat['value'], 2, '0', STR_PAD_LEFT) }}<span>{{ $stat['label'] }}</span></div>
+                <p>{{ $stat['caption'] }}</p>
+            </article>
+        @endforeach
+    </section>
+
+    <div class="dash-workspace">
+        <section class="dash-panel attendance-panel" aria-labelledby="attendance-title">
+            <div class="panel-heading"><div><h2 id="attendance-title">បញ្ជីវត្តមានបុគ្គលិក <span class="count-pill">{{ $todayRecords->count() }}</span></h2><p>Attendance records · {{ $selectedCarbon->format('d M Y') }}</p></div><a href="{{ route('admin.attendance.history', ['date' => $selectedDate]) }}" class="text-link">របាយការណ៍ <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div>
+            <div class="table-toolbar">
+                <div class="status-tabs" role="group" aria-label="Filter attendance status">
+                    @foreach(['all' => 'ទាំងអស់', 'present' => 'ទាន់ម៉ោង', 'late' => 'មកយឺត'] as $value => $label)
+                        <button type="button" @click="status = '{{ $value }}'" :class="{ 'active': status === '{{ $value }}' }" :aria-pressed="status === '{{ $value }}'">{{ $label }}</button>
+                    @endforeach
+                </div>
+                <label class="table-search"><i class="fas fa-search" aria-hidden="true"></i><span class="sr-only">Search employees</span><input type="search" x-model="search" placeholder="ស្វែងរកបុគ្គលិក…"></label>
             </div>
-            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none">{{ $totalEmployees }}</h3>
-            <div class="text-ink-soft text-[13px] mt-2">Total active employees</div>
-        </div>
-
-        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
-            <div class="flex items-center justify-between mb-3">
-                <div class="font-khmer text-ink-soft font-semibold text-sm">មកធ្វើការទាន់ម៉ោង</div>
-                <div class="w-11 h-11 rounded-brand-md bg-green-100 text-green-800 flex items-center justify-center text-lg">✓</div>
-            </div>
-            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none text-green-600">{{ $presentToday }}</h3>
-            <div class="text-ink-soft text-[13px] mt-2">Checked in {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
-        </div>
-
-        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
-            <div class="flex items-center justify-between mb-3">
-                <div class="font-khmer text-ink-soft font-semibold text-sm">មកធ្វើការយឺត</div>
-                <div class="w-11 h-11 rounded-brand-md bg-amber-100 text-amber-800 flex items-center justify-center text-lg">⏰</div>
-            </div>
-            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none text-amber-500">{{ $lateToday }}</h3>
-            <div class="text-ink-soft text-[13px] mt-2">Late attendance {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
-        </div>
-
-        <div class="rounded-brand-lg shadow-card bg-white p-5 sm:p-6 hover:shadow-card-lg hover:-translate-y-0.5 transition">
-            <div class="flex items-center justify-between mb-3">
-                <div class="font-khmer text-ink-soft font-semibold text-sm">អវត្តមាន</div>
-                <div class="w-11 h-11 rounded-brand-md bg-red-100 text-red-800 flex items-center justify-center text-lg">✕</div>
-            </div>
-            <h3 class="text-2xl sm:text-[2rem] font-extrabold leading-none text-red-500">{{ $absentToday }}</h3>
-            <div class="text-ink-soft text-[13px] mt-2">Absent employees {{ $isToday ? 'today' : 'on ' . $selectedCarbon->format('d M') }}</div>
-        </div>
-    </div>
-
-    <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
-        <div class="font-khmer flex justify-between items-center flex-wrap gap-2 px-5 sm:px-6 py-4 border-b border-slate-200 font-bold">
-            <span>បញ្ជីវត្តមានប្រចាំថ្ងៃ</span>
-            <span class="text-ink-soft text-[13px] font-normal">{{ $selectedCarbon->format('l, d M Y') }}</span>
-        </div>
-
-        {{-- Desktop/tablet: full table --}}
-        <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-slate-50">
-                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">លេខសម្គាល់បុគ្គលិក</th>
-                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ឈ្មោះបុគ្គលិក</th>
-                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ផ្នែកការងារ</th>
-                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ប្រភេទវត្តមាន</th>
-                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ម៉ោងចូល</th>
-                        <th class="font-khmer text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">ម៉ោងចេញ</th>
-                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Status</th>
-                        <th class="text-left font-bold text-slate-700 text-[14px] whitespace-nowrap px-3.5 py-4 border-b border-slate-200">Late Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($todayRecords as $record)
-                        <tr class="hover:bg-slate-50/80 align-middle">
-                            <td class="px-3.5 py-4 border-b border-slate-100">
-                                <span class="inline-block px-2.5 py-1.5 rounded-[10px] bg-slate-100 text-ink text-[13px] font-bold">{{ $record->employee->employee_code ?? '-' }}</span>
-                            </td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">
-                                <div class="font-semibold">{{ $record->employee->full_name ?? '-' }}</div>
-                            </td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->employee->department->name ?? '-' }}</td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->attendancePoint->name ?? '-' }}</td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_in_time ?? '-' }}</td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_out_time ?? '-' }}</td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">
-                                @if($record->status === 'late')
-                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
-                                @elseif($record->status === 'present')
-                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
-                                @else
-                                    <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-red-100 text-red-800">{{ ucfirst($record->status) }}</span>
-                                @endif
-                            </td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">
-                                @php
-                                    $hours = floor($record->late_minutes / 60);
-                                    $minutes = $record->late_minutes % 60;
-                                @endphp
-
-                                @if($record->late_minutes > 0)
-                                    <span class="font-bold text-amber-700">
-                                        {{ str_pad($hours, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutes, 2, '0', STR_PAD_LEFT) }}
-                                    </span>
-                                @else
-                                    <span class="text-ink-soft">00:00</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-ink-soft py-8">
-                                No attendance records today.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        {{-- Mobile: card list --}}
-        <div class="md:hidden">
-            @forelse($todayRecords as $record)
-                <div class="px-4 py-3.5 border-b border-slate-100 last:border-b-0">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-semibold">{{ $record->employee->full_name ?? '-' }}</div>
-                            <span class="inline-block mt-1 px-2.5 py-1.5 rounded-[10px] bg-slate-100 text-ink text-[13px] font-bold">{{ $record->employee->employee_code ?? '-' }}</span>
-                        </div>
-                        @if($record->status === 'late')
-                            <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
-                        @elseif($record->status === 'present')
-                            <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
-                        @else
-                            <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-red-100 text-red-800">{{ ucfirst($record->status) }}</span>
-                        @endif
-                    </div>
-                    <div class="flex flex-wrap gap-2.5 text-[12.5px] text-ink-soft mt-1.5">
-                        <span><i class="fas fa-sitemap mr-1"></i>{{ $record->employee->department->name ?? '-' }}</span>
-                        <span><i class="fas fa-location-dot mr-1"></i>{{ $record->attendancePoint->name ?? '-' }}</span>
-                    </div>
-                    <div class="flex flex-wrap gap-3 text-[12.5px] font-semibold mt-2">
-                        <span><i class="fas fa-arrow-right-to-bracket mr-1 text-green-600"></i>{{ $record->check_in_time ?? '--:--' }}</span>
-                        <span><i class="fas fa-arrow-right-from-bracket mr-1 text-amber-500"></i>{{ $record->check_out_time ?? '--:--' }}</span>
-                        @if($record->late_minutes > 0)
+            <div class="dash-table-wrap">
+                <table class="dash-table">
+                    <thead><tr><th>បុគ្គលិក</th><th>ផ្នែក</th><th>ម៉ោងចូល</th><th>ម៉ោងចេញ</th><th>ស្ថានភាព</th><th><span class="sr-only">View details</span></th></tr></thead>
+                    <tbody>
+                        @foreach($todayRecords as $record)
                             @php
-                                $hours = floor($record->late_minutes / 60);
-                                $minutes = $record->late_minutes % 60;
+                                $searchText = mb_strtolower(($record->employee->full_name ?? '') . ' ' . ($record->employee->employee_code ?? '') . ' ' . ($record->employee->department->name ?? ''));
                             @endphp
-                            <span class="font-bold text-amber-700">
-                                <i class="fas fa-clock mr-1"></i>{{ str_pad($hours, 2, '0', STR_PAD_LEFT) }}:{{ str_pad($minutes, 2, '0', STR_PAD_LEFT) }}
-                            </span>
-                        @endif
-                    </div>
-                </div>
-            @empty
-                <div class="text-center text-ink-soft py-8">
-                    No attendance records today.
-                </div>
-            @endforelse
-        </div>
+                            <tr data-search="{{ $searchText }}" data-status="{{ $record->status }}" x-show="(status === 'all' || status === $el.dataset.status) && $el.dataset.search.includes(search.trim().toLocaleLowerCase())">
+                                <td><a href="{{ route('admin.employees.show', $record->employee_id) }}" class="employee-cell"><span class="employee-avatar">{{ mb_substr($record->employee->full_name ?? '?', 0, 1) }}</span><span><strong>{{ $record->employee->full_name ?? '—' }}</strong><small>{{ $record->employee->employee_code ?? '—' }}</small></span></a></td>
+                                <td>{{ $record->employee->department->name ?? '—' }}</td>
+                                <td class="time-cell">{{ $record->check_in_time ? \Illuminate\Support\Carbon::parse($record->check_in_time)->format('h:i A') : '—' }}</td>
+                                <td class="time-cell muted">{{ $record->check_out_time ? \Illuminate\Support\Carbon::parse($record->check_out_time)->format('h:i A') : '—' }}</td>
+                                <td><span class="attendance-badge {{ $record->status }}"><span></span>{{ $record->status === 'present' ? 'ទាន់ម៉ោង' : ($record->status === 'late' ? 'មកយឺត' : 'អវត្តមាន') }}</span>@if($record->late_minutes > 0)<small class="late-duration">+{{ $record->late_minutes }} min</small>@endif</td>
+                                <td><a class="row-link" href="{{ route('admin.attendances.show', ['employee' => $record->employee_id, 'date' => $record->attendance_date]) }}" aria-label="View attendance for {{ $record->employee->full_name }}"><i class="fas fa-chevron-right" aria-hidden="true"></i></a></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if($todayRecords->isEmpty())
+                <div class="dash-empty"><span><i class="far fa-calendar-check" aria-hidden="true"></i></span><h3>មិនទាន់មានទិន្នន័យវត្តមាន</h3><p>មិនមានការចុះវត្តមានសម្រាប់ថ្ងៃទី {{ $selectedCarbon->format('d M Y') }}។<br>ជ្រើសរើសថ្ងៃផ្សេង ដើម្បីមើលប្រវត្តិវត្តមាន។</p><a href="{{ route('admin.dashboard', ['date' => $selectedCarbon->copy()->subDay()->toDateString()]) }}" class="dash-button light">មើលថ្ងៃមុន <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+            @else
+                <div class="dash-empty search-empty" x-cloak x-show="!Array.from($root.querySelectorAll('tbody tr')).some(row => (status === 'all' || status === row.dataset.status) && row.dataset.search.includes(search.trim().toLocaleLowerCase()))"><i class="fas fa-search" aria-hidden="true"></i><h3>រកមិនឃើញបុគ្គលិក</h3><p>សូមសាកល្បងឈ្មោះ លេខសម្គាល់ ឬស្ថានភាពផ្សេង។</p><button type="button" class="text-link" @click="search = ''; status = 'all'">សម្អាតការស្វែងរក</button></div>
+            @endif
+            <div class="table-footer"><span><span class="tiny-dot"></span> ទិន្នន័យថ្ងៃទី {{ $selectedCarbon->format('d M Y') }}</span><a href="{{ route('admin.attendances.index', ['date_from' => $selectedDate, 'date_to' => $selectedDate]) }}">មើលវត្តមានទាំងអស់ <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+        </section>
+
+        <aside class="dash-aside">
+            <section class="dash-panel overview-panel" aria-labelledby="overview-title">
+                <div class="panel-heading"><div><h2 id="overview-title">សង្ខេបវត្តមាន</h2><p>Attendance overview</p></div><i class="fas fa-chart-pie muted" aria-hidden="true"></i></div>
+                <div class="attendance-ring" style="--rate: {{ $rate }}" role="img" aria-label="Attendance rate {{ $rate }} percent"><div><strong>{{ $rate }}<small>%</small></strong><span>អត្រាវត្តមាន</span></div></div>
+                <p class="ring-caption"><strong>{{ $presentToday }}</strong> នាក់ ក្នុងចំណោម {{ $totalEmployees }} នាក់</p>
+                <div class="overview-legend"><div><span><i class="legend-dot green"></i> ទាន់ម៉ោង</span><strong>{{ $onTime }}</strong></div><div><span><i class="legend-dot amber"></i> មកយឺត</span><strong>{{ $lateToday }}</strong></div><div><span><i class="legend-dot red"></i> អវត្តមាន</span><strong>{{ $absentToday }}</strong></div></div>
+            </section>
+            <section class="dash-panel quick-panel"><h2>ចូលប្រើរហ័ស</h2><a href="{{ route('admin.attendance-points.index') }}"><span class="quick-icon"><i class="fas fa-qrcode" aria-hidden="true"></i></span><span><strong>គ្រប់គ្រង QR Code</strong><small>Attendance checkpoints</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a><a href="{{ route('admin.shifts.index') }}"><span class="quick-icon"><i class="far fa-clock" aria-hidden="true"></i></span><span><strong>ម៉ោងធ្វើការ</strong><small>Manage work shifts</small></span><i class="fas fa-arrow-right" aria-hidden="true"></i></a></section>
+        </aside>
     </div>
 </div>
 @endsection

@@ -6,245 +6,182 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\AttendancePoint;
 use App\Models\User;
-use App\Services\OfficeNetworkChecker;
+use App\Services\AttendanceLocationVerifier;
+use App\Services\AttendanceWorkday;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class EmployeeAttendanceController extends Controller
 {
-    /**
-     * GET /employee/attendance/checkin
-     * Shows the check-in/out button, already knowing which action
-     * (check-in or check-out) is next for today.
-     */
+    private function requireActiveEmployee(Request $request): void
+    {
+        abort_unless($request->user()?->role === 'employee' && $request->user()->employee?->status === 'active', 403, 'An active employee account is required.');
+    }
+
+    private function nextType(): string
+    {
+        $workday = app(AttendanceWorkday::class);
+        $employee = Auth::user()->employee;
+        [$start, $end] = $workday->bounds($employee, $workday->date($employee, now()));
+        $last = Attendance::where('user_id', Auth::id())->where('scanned_at', '>=', $start)->where('scanned_at', '<', $end)
+            ->orderByDesc('scanned_at')->orderByDesc('id')->first();
+        return $last?->type === 'in' ? 'out' : 'in';
+    }
+
     public function checkinForm(Request $request)
     {
-        $lastToday = Attendance::where('user_id', Auth::id())
-            ->whereDate('scanned_at', now()->toDateString())
-            ->latest('scanned_at')
-            ->first();
-
-        $nextAction = $lastToday?->type === 'in' ? 'checkout' : 'checkin';
-
+        $this->requireActiveEmployee($request);
         return view('employee.attendance.checkin-form', [
-            'nextAction' => $nextAction,
+            'nextAction' => $this->nextType(),
+            'attendancePoints' => AttendancePoint::where('status', 'active')
+                ->whereNotNull('latitude')->whereNotNull('longitude')->orderBy('name')->get(),
         ]);
     }
 
-    /**
-     * POST /employee/attendance/checkin
-     */
-    public function checkin(Request $request, OfficeNetworkChecker $checker, TelegramService $telegram)
+    public function checkin(Request $request, AttendanceLocationVerifier $verifier, TelegramService $telegram)
     {
-        return $this->recordAttendance($request, $checker, $telegram, 'in');
+        return $this->directAttendance($request, $verifier, $telegram, 'in');
     }
 
-    /**
-     * POST /employee/attendance/checkout
-     */
-    public function checkout(Request $request, OfficeNetworkChecker $checker, TelegramService $telegram)
+    public function checkout(Request $request, AttendanceLocationVerifier $verifier, TelegramService $telegram)
     {
-        return $this->recordAttendance($request, $checker, $telegram, 'out');
+        return $this->directAttendance($request, $verifier, $telegram, 'out');
     }
 
-    private function recordAttendance(Request $request, OfficeNetworkChecker $checker, TelegramService $telegram, string $type)
+    private function directAttendance(Request $request, AttendanceLocationVerifier $verifier, TelegramService $telegram, string $type)
     {
-        // Real enforcement — the office.network middleware on the route
-        // already blocks this, this is just belt-and-suspenders.
-        if (!$checker->passes($request->ip())) {
-            abort(403, 'You must be connected to office WiFi to ' . ($type === 'in' ? 'check in' : 'check out') . '.');
+        $this->requireActiveEmployee($request);
+        $request->validate(['attendance_point_id' => ['required', 'integer', 'exists:attendance_points,id']]);
+        $point = AttendancePoint::findOrFail($request->input('attendance_point_id'));
+        return $this->recordAttendance($request, $point, $verifier, $telegram, $type);
+    }
+
+    private function recordAttendance(Request $request, AttendancePoint $point, AttendanceLocationVerifier $verifier, TelegramService $telegram, string $type, ?string $scanId = null)
+    {
+        $this->requireActiveEmployee($request);
+        $validated = $request->validate([
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'location_accuracy' => ['required', 'numeric', 'min:0', 'max:100000'],
+            'location_captured_at' => ['required', 'date'],
+            'work_summary' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $location = $verifier->verify($point, $validated);
+        $attendance = DB::transaction(function () use ($request, $point, $type, $validated, $location) {
+            // Serialize submissions for the same employee, including rapid double taps.
+            User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
+            if ($this->nextType() !== $type) {
+                throw ValidationException::withMessages(['attendance' => 'Attendance has already changed. Refresh this page before trying again.']);
+            }
+            return Attendance::create(array_merge($location, [
+                'user_id' => Auth::id(), 'attendance_point_id' => $point->id,
+                'type' => $type, 'scanned_at' => now(), 'ip_address' => $request->ip(),
+                'work_summary' => $type === 'out' ? (trim($validated['work_summary'] ?? '') ?: null) : null,
+            ]));
+        });
+        if ($scanId) {
+            session()->put('attendance_scan_intents.' . $scanId . '.event_id', $attendance->id);
         }
-
-        $workSummary = $type === 'out' ? trim((string) $request->input('work_summary')) : null;
-
-        $attendance = Attendance::create([
-            'user_id' => Auth::id(),
-            'type' => $type,
-            'scanned_at' => now(),
-            'ip_address' => $request->ip(),
-            'work_summary' => $workSummary ?: null,
-        ]);
-
-        $user = Auth::user();
-        $label = $type === 'in' ? 'Check-In' : 'Check-Out';
-
         $this->notifyTelegram($telegram, $this->buildAttendanceCaption(
-            $user, $type, $attendance->scanned_at, $attendance->ip_address, null, $attendance->work_summary
+            $request->user(), $type, $attendance->scanned_at, $attendance->ip_address, $point->name, $attendance->work_summary, $attendance
         ));
+        return $this->showRecordedAttendance($attendance);
+    }
 
+    private function showRecordedAttendance(Attendance $attendance)
+    {
         session()->flash('attendance_result', [
-            'type' => $type,
-            'label' => $label,
+            'type' => $attendance->type,
+            'label' => $attendance->type === 'in' ? 'Check-In' : 'Check-Out',
+            'checkpoint' => $attendance->attendancePoint?->name,
             'time' => $attendance->scanned_at->format('d M Y H:i:s'),
-            'name' => $user->name,
+            'name' => Auth::user()->name,
         ]);
-
         return redirect()->route('employee.attendance.success');
     }
 
-    /**
-     * GET /employee/attendance/history
-     */
-    public function history(Request $request)
+    public function history(Request $request, \App\Services\AttendanceSummaryService $summary)
     {
-        $records = Attendance::with('attendancePoint')
-            ->where('user_id', Auth::id())
-            ->latest('scanned_at')
-            ->paginate(15);
-
-        return view('employee.attendance.history', [
-            'records' => $records,
+        $this->requireActiveEmployee($request);
+        $days = $summary->summarize(['employee_id' => $request->user()->employee->id]);
+        $page = max(1, (int) $request->query('page', 1));
+        $records = new \Illuminate\Pagination\LengthAwarePaginator($days->forPage($page, 15)->values(), $days->count(), 15, $page, [
+            'path' => $request->url(),
         ]);
+        return view('employee.attendance.history', compact('records'));
     }
 
-    /**
-     * GET /employee/attendance/success
-     */
     public function success(Request $request)
     {
         $result = session('attendance_result');
-
-        if (!$result) {
-            return redirect()->route('employee.attendance.checkin.form');
-        }
-
-        return view('employee.attendance.success', ['result' => $result]);
+        return $result ? view('employee.attendance.success', ['result' => $result])
+            : redirect()->route('employee.attendance.checkin.form');
     }
 
-    /**
-     * GET /api/verify-network
-     * Called by checkin-form.blade.php's polling JS.
-     */
-    public function verifyNetwork(Request $request, OfficeNetworkChecker $checker)
-    {
-        $ip = $request->ip();
-        $verified = $checker->passes($ip);
-
-        return response()->json([
-            'verified' => $verified,
-            'network_info' => $verified ? "Connected via {$ip}" : null,
-            // Always included (even on failure) so this endpoint can be hit
-            // directly to see what IP the server actually detected - the
-            // one thing you need to diagnose a WiFi-gate mismatch, which
-            // network_info alone doesn't reveal when verification fails.
-            'detected_ip' => $ip,
-        ]);
-    }
     public function scan()
     {
         return view('employee.attendance.scan');
     }
 
-    /**
-     * GET /attendance/{token}
-     * Landing page when an employee scans the physical QR code with
-     * their phone camera. Not behind auth middleware because a scan
-     * can arrive from a logged-out session — we bounce those to login
-     * and bring them right back here afterwards.
-     */
     public function login(Request $request, $token)
     {
-        $attendancePoint = AttendancePoint::where('qr_token', $token)
-            ->where('status', 'active')
-            ->first();
-
-        if (!$attendancePoint) {
-            abort(404, 'Invalid or inactive QR code.');
-        }
-
+        $point = AttendancePoint::where('qr_token', $token)->where('status', 'active')->firstOrFail();
         if (!Auth::check()) {
             session(['attendance_intended_token' => $token]);
-
-            return redirect()->route('login')
-                ->withErrors(['login' => 'Please log in to record your attendance.']);
+            return redirect()->route('login')->withErrors(['login' => 'Please log in to record your attendance.']);
         }
-
-        $lastToday = Attendance::where('user_id', Auth::id())
-            ->whereDate('scanned_at', now()->toDateString())
-            ->latest('scanned_at')
-            ->first();
-
-        $nextAction = $lastToday?->type === 'in' ? 'out' : 'in';
-
+        $this->requireActiveEmployee($request);
+        if ($request->has('scan') && (!is_string($request->query('scan')) || !Str::isUuid($request->query('scan')))) {
+            return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'This scan is invalid. Please scan the QR again.']);
+        }
+        $intents = session('attendance_scan_intents', []);
+        $scanId = $request->query('scan');
+        if ($scanId) {
+            $intent = $intents[$scanId] ?? null;
+            if (!$intent || $intent['user_id'] !== Auth::id() || $intent['point_id'] !== $point->id) {
+                return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'This scan has expired. Please scan the QR again.']);
+            }
+            if (!empty($intent['event_id'])) {
+                return $this->showRecordedAttendance(Attendance::where('user_id', Auth::id())->findOrFail($intent['event_id']));
+            }
+            if ($intent['expires_at'] < now()->timestamp) {
+                return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'This scan has expired. Please scan the QR again.']);
+            }
+        } else {
+            $scanId = (string) Str::uuid();
+            $intent = ['user_id' => Auth::id(), 'point_id' => $point->id, 'type' => $this->nextType(), 'expires_at' => now()->addMinutes(5)->timestamp];
+            $intents = array_slice($intents, -19, null, true);
+            $intents[$scanId] = $intent;
+            session(['attendance_scan_intents' => $intents]);
+        }
         return view('employee.attendance.confirm', [
-            'attendancePoint' => $attendancePoint,
-            'token' => $token,
-            'nextAction' => $nextAction,
+            'attendancePoint' => $point, 'token' => $token, 'nextAction' => $intent['type'], 'scanId' => $scanId,
         ]);
     }
 
-    public function submit(
-        Request $request,
-        $token,
-        OfficeNetworkChecker $checker,
-        TelegramService $telegram
-    ) {
-        if (!Auth::check()) {
-            session(['attendance_intended_token' => $token]);
-
-            return redirect()->route('login')
-                ->withErrors(['login' => 'Please log in to record your attendance.']);
+    public function submit(Request $request, $token, AttendanceLocationVerifier $verifier, TelegramService $telegram)
+    {
+        $this->requireActiveEmployee($request);
+        $validated = $request->validate(['attendance_type' => ['required', 'in:in,out'], 'scan_id' => ['nullable', 'uuid']]);
+        $point = AttendancePoint::where('qr_token', $token)->where('status', 'active')->firstOrFail();
+        $scanId = $validated['scan_id'] ?? null;
+        if ($scanId) {
+            $intent = session('attendance_scan_intents.' . $scanId);
+            if (!$intent || $intent['user_id'] !== Auth::id() || $intent['point_id'] !== $point->id || $intent['type'] !== $validated['attendance_type']) {
+                throw ValidationException::withMessages(['scan' => 'This scan is invalid. Please scan the QR again.']);
+            }
+            if (!empty($intent['event_id'])) {
+                return $this->showRecordedAttendance(Attendance::where('user_id', Auth::id())->findOrFail($intent['event_id']));
+            }
+            if ($intent['expires_at'] < now()->timestamp) {
+                throw ValidationException::withMessages(['scan' => 'This scan has expired. Please scan the QR again.']);
+            }
         }
-
-        // Verify office network
-        if (!$checker->passes($request->ip())) {
-            return redirect()
-                ->route('employee.attendance.checkin.form')
-                ->withErrors([
-                    'wifi' => 'You must be connected to the office WiFi.'
-                ]);
-        }
-
-        $attendancePoint = AttendancePoint::where('qr_token', $token)->first();
-
-        if (!$attendancePoint) {
-            return redirect()
-                ->back()
-                ->withErrors([
-                    'qr' => 'Invalid QR Code.'
-                ]);
-        }
-
-        // Determine next action
-        $lastAttendance = Attendance::where('user_id', Auth::id())
-            ->whereDate('scanned_at', today())
-            ->latest('scanned_at')
-            ->first();
-
-        $type = ($lastAttendance && $lastAttendance->type === 'in')
-            ? 'out'
-            : 'in';
-
-        $workSummary = $type === 'out' ? trim((string) $request->input('work_summary')) : null;
-
-        // Save attendance
-        $attendance = Attendance::create([
-            'user_id' => Auth::id(),
-            'attendance_point_id' => $attendancePoint->id,
-            'type' => $type,
-            'scanned_at' => now(),
-            'ip_address' => $request->ip(),
-            'work_summary' => $workSummary ?: null,
-        ]);
-
-        // Telegram notification
-        $user = Auth::user();
-
-        $this->notifyTelegram($telegram, $this->buildAttendanceCaption(
-            $user, $type, $attendance->scanned_at, $attendance->ip_address, $attendancePoint->name, $attendance->work_summary
-        ));
-
-        // Success session
-        session()->flash('attendance_result', [
-            'type' => $type,
-            'label' => strtoupper($type),
-            'time' => $attendance->scanned_at->format('d M Y H:i:s'),
-            'name' => $user->name,
-        ]);
-
-        return redirect()->route('employee.attendance.success');
+        return $this->recordAttendance($request, $point, $verifier, $telegram, $validated['attendance_type'], $scanId);
     }
 
     /**
@@ -266,13 +203,18 @@ class EmployeeAttendanceController extends Controller
         \Illuminate\Support\Carbon $scannedAt,
         string $ip,
         ?string $location = null,
-        ?string $workSummary = null
+        ?string $workSummary = null,
+        ?Attendance $event = null
     ): string {
         $employee = $user->employee;
-        $label = $type === 'in' ? 'CHECK IN' : 'CHECK OUT';
+        $label = $type === 'in' ? 'ចូលធ្វើការ' : 'ចេញពីធ្វើការ';
         $emoji = $type === 'in' ? '🟢' : '🔴';
 
-        $details = ['👤 ' . e($user->name)];
+        $details = ['👤 ឈ្មោះ៖ ' . e($employee?->full_name ?? $user->name)];
+
+        if ($employee) {
+            $details[] = '🪪 លេខកូដបុគ្គលិក៖ ' . e($employee->employee_code);
+        }
 
         if ($employee) {
             $role = trim(implode(' · ', array_filter([
@@ -281,14 +223,20 @@ class EmployeeAttendanceController extends Controller
             ])));
 
             if ($role !== '') {
-                $details[] = '🏢 ' . e($role);
+                $details[] = '🏢 ផ្នែក / តួនាទី៖ ' . e($role);
             }
         }
 
-        $details[] = '🕒 ' . $scannedAt->format('d M Y, h:i A');
+        $details[] = '🕒 ថ្ងៃទី / ម៉ោង៖ ' . $scannedAt->format('d/m/Y H:i');
 
         if ($location) {
-            $details[] = '📍 ' . e($location);
+            $details[] = '📍 ទីតាំង៖ ' . e($location);
+        }
+
+        if ($event && $event->latitude !== null && $event->longitude !== null) {
+            $details[] = 'ចម្ងាយពីទីតាំងការងារ៖ ' . number_format($event->distance_meters, 1) . ' ម៉ែត្រ';
+            $details[] = 'ភាពត្រឹមត្រូវ GPS៖ ±' . number_format($event->location_accuracy, 1) . ' ម៉ែត្រ';
+            $details[] = '<a href="https://www.google.com/maps?q=' . $event->latitude . ',' . $event->longitude . '">មើលទីតាំងបុគ្គលិកលើផែនទី</a>';
         }
 
         // <blockquote> is the only HTML tag Telegram's Bot API renders with
@@ -296,6 +244,7 @@ class EmployeeAttendanceController extends Controller
         // plain-text messages, so the details (and, on checkout, the work
         // summary) each live inside their own one.
         $lines = [
+            '<b>PizzaHappyFamily · វត្តមានបុគ្គលិក</b>',
             "{$emoji} <b>{$label}</b>",
             '',
             '<blockquote>' . implode("\n", $details) . '</blockquote>',
@@ -303,14 +252,14 @@ class EmployeeAttendanceController extends Controller
 
         if ($workSummary) {
             $lines[] = '';
-            $lines[] = '📝 <b>Work Summary</b>';
+            $lines[] = '📝 <b>សង្ខេបការងារ</b>';
             // Telegram's HTML mode doesn't support <br> - a plain newline in
             // the text itself is what it renders as a line break.
             $lines[] = '<blockquote>' . e($workSummary) . '</blockquote>';
         }
 
         $lines[] = '';
-        $lines[] = '🌐 <code>' . e($ip) . '</code>';
+        $lines[] = '🌐 អាសយដ្ឋាន IP៖ <code>' . e($ip) . '</code>';
 
         return implode("\n", $lines);
     }

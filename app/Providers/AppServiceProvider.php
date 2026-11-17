@@ -24,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
         // "build" (treats it as a generated artifact, same as it blanket-
         // blocks /storage/ URLs at the edge). Renamed so it actually deploys.
         $vite->useBuildDirectory('compiled-assets');
+        \Illuminate\Http\Middleware\TrustProxies::at(config('attendance.trusted_proxies', []));
     }
 }

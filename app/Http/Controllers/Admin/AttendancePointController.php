@@ -31,6 +31,9 @@ class AttendancePointController extends Controller
             'location' => 'nullable|string|max:255',
             'department_id' => 'nullable|exists:departments,id',
             'status' => 'required|in:active,inactive',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'radius_meters' => 'required|integer|between:25,1000',
         ]);
 
         $token = Str::random(32);
@@ -38,9 +41,12 @@ class AttendancePointController extends Controller
         $attendancePoint = AttendancePoint::create([
             'name' => $validated['name'],
             'code' => $validated['code'],
-            'location' => $validated['location'],
-            'department_id' => $validated['department_id'],
+            'location' => $validated['location'] ?? null,
+            'department_id' => $validated['department_id'] ?? null,
             'status' => $validated['status'],
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'radius_meters' => $validated['radius_meters'],
             'qr_token' => $token,
         ]);
 
@@ -85,6 +91,9 @@ class AttendancePointController extends Controller
             'location' => ['nullable', 'string', 'max:255'],
             'department_id' => ['required', 'exists:departments,id'],
             'status' => ['required', 'in:active,inactive'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'radius_meters' => ['required', 'integer', 'between:25,1000'],
         ]);
 
         $attendancePoint->update($validated);
@@ -95,6 +104,9 @@ class AttendancePointController extends Controller
 
     public function destroy(AttendancePoint $attendancePoint)
     {
+        if ($attendancePoint->attendanceRecords()->exists() || \App\Models\Attendance::where('attendance_point_id', $attendancePoint->id)->exists()) {
+            return back()->withErrors(['checkpoint' => 'This checkpoint has attendance history. Set it inactive instead of deleting it.']);
+        }
         $attendancePoint->delete();
 
         return redirect()->route('admin.attendance-points.index')

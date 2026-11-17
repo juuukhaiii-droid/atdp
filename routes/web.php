@@ -12,7 +12,6 @@ use App\Http\Controllers\Employee\EmployeeAttendanceController;
 use App\Http\Controllers\Employee\EmployeeProfileController;
 use App\Http\Controllers\Employee\EmployeeReportController;
 use App\Http\Controllers\PublicFileController;
-use App\Http\Middleware\EnsureOfficeNetwork;
 
 
 Route::get('/', function () {
@@ -26,22 +25,17 @@ Route::get('/files/{path}', [PublicFileController::class, 'show'])
     ->where('path', '.*')
     ->name('files.show');
 
-// TEMPORARY: no SSH/artisan access on this host. Visit once after deploy to
-// run pending migrations, then this route gets removed.
-Route::get('/admin/system/run-deploy-tasks', function () {
-    $output = [];
-
-    $output[] = '$ php artisan migrate --force';
-    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-    $output[] = trim(\Illuminate\Support\Facades\Artisan::output()) ?: '(no output)';
-
-    return response('<pre>' . e(implode("\n", $output)) . '</pre>');
-})->middleware(['auth', 'role:admin']);
-
 require __DIR__ . '/auth.php';
 
+Route::get('/dashboard', function () {
+    return redirect()->route(auth()->user()->role === 'admin' ? 'admin.dashboard' : 'employee.dashboard');
+})->middleware('auth')->name('dashboard');
+Route::get('/profile', function () {
+    return redirect()->route(auth()->user()->role === 'admin' ? 'admin.dashboard' : 'employee.profile');
+})->middleware('auth')->name('profile.edit');
 
-Route::middleware(['auth'])
+
+Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -58,13 +52,13 @@ Route::middleware(['auth'])
             ->name('employees.attendance.update');
 
         // Departments
-        Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class);
+        Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class)->except('show');
 
         // Shifts
-        Route::resource('shifts', App\Http\Controllers\Admin\ShiftController::class);
+        Route::resource('shifts', App\Http\Controllers\Admin\ShiftController::class)->except('show');
 
         // Attendance Points
-        Route::resource('attendance-points', App\Http\Controllers\Admin\AttendancePointController::class);
+        Route::resource('attendance-points', App\Http\Controllers\Admin\AttendancePointController::class)->except('show');
 
         // Attendance Records
         // Custom (not resourceful) because there's no real numeric id to
@@ -89,20 +83,15 @@ Route::middleware(['auth', 'role:employee'])
         Route::get('/dashboard', [EmployeeDashboardController::class, 'index'])
             ->name('dashboard');
 
-        Route::get('/attendance', [EmployeeAttendanceController::class, 'index'])
+        Route::get('/attendance', [EmployeeAttendanceController::class, 'checkinForm'])
             ->name('attendance.index');
 
         Route::get('/attendance/checkin', [EmployeeAttendanceController::class, 'checkinForm'])
             ->name('attendance.checkin.form');
 
-        // WiFi-gated: these two are the actual security boundary.
-        Route::middleware(EnsureOfficeNetwork::class)->group(function () {
-            Route::post('/attendance/checkin', [EmployeeAttendanceController::class, 'checkin'])
-                ->name('attendance.checkin');
-
-            Route::post('/attendance/checkout', [EmployeeAttendanceController::class, 'checkout'])
-                ->name('attendance.checkout');
-        });
+        // Each submission validates GPS coordinates on the server.
+        Route::post('/attendance/checkin', [EmployeeAttendanceController::class, 'checkin'])->name('attendance.checkin');
+        Route::post('/attendance/checkout', [EmployeeAttendanceController::class, 'checkout'])->name('attendance.checkout');
 
         // New: success page after a check-in/out
         Route::get('/attendance/success', [EmployeeAttendanceController::class, 'success'])
@@ -115,17 +104,14 @@ Route::middleware(['auth', 'role:employee'])
             ->name('profile');
     });
 
-// WiFi Network Verification (for check-in)
-Route::get('/api/verify-network', [EmployeeAttendanceController::class, 'verifyNetwork'])
-    ->middleware('auth')
-    ->name('api.verify-network');
-
 Route::get('/attendance/{token}', [EmployeeAttendanceController::class, 'login'])
     ->name('attendance.show');
 
 // Public QR Scanner
 Route::get('/attendance/scan/qr', [EmployeeAttendanceController::class, 'scan'])
+    ->middleware(['auth', 'role:employee'])
     ->name('attendance.show.qr');
 
 Route::post('/attendance/{token}', [EmployeeAttendanceController::class, 'submit'])
+    ->middleware(['auth', 'role:employee'])
     ->name('attendance.submit');

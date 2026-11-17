@@ -1,276 +1,91 @@
 @extends('layouts.auth')
-
-@section('title', 'ចូលប្រើប្រាស់')
-
+@section('title', 'Sign In')
 @section('content')
-    @php $activeMode = old('login_type', 'employee'); @endphp
-
     <div class="auth-card-header">
         <h1>ភីហ្សា គ្រួសាររីករាយ</h1>
         <p>សូមធ្វើការបំពេញព័ត៌មានខាងក្រោម.</p>
     </div>
-
-    @if (session('status'))
-        <div class="alert alert-success auth-alert mb-4" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
-        </div>
-    @endif
-
-    @if ($errors->any())
+    @if(session('status'))
+    <div class="alert alert-success auth-alert mb-4" role="status">{{ session('status') }}</div>@endif
+    @if($errors->any())
         <div class="alert alert-danger auth-alert mb-4" role="alert">
-            <i class="fas fa-circle-exclamation me-2"></i>
-            @foreach ($errors->all() as $error)
-                {{ $error }}@if (!$loop->last)<br>@endif
-            @endforeach
-        </div>
+            @foreach($errors->all() as $error){{ $error }}@if(!$loop->last)<br>@endif @endforeach</div>
     @endif
-
-    <div class="login-mode-toggle" role="tablist">
-        <button type="button" class="login-mode-btn {{ $activeMode === 'employee' ? 'active' : '' }}" data-mode="employee">
-            <i class="fas fa-user me-1"></i>Employee
-        </button>
-        <button type="button" class="login-mode-btn {{ $activeMode === 'admin' ? 'active' : '' }}" data-mode="admin">
-            <i class="fas fa-user-shield me-1"></i>Admin
-        </button>
-    </div>
-
-    <form method="POST" action="{{ route('login') }}" novalidate>
+    <form id="login-form" method="POST" action="{{ route('login') }}">
         @csrf
-        <input type="hidden" name="login_type" id="login_type" value="{{ $activeMode }}">
-
-        {{-- Employee fields: full name + PIN --}}
-        <div id="employee-fields" style="display: {{ $activeMode === 'employee' ? 'block' : 'none' }};">
-            <div class="mb-3">
-                <label for="full_name" class="form-label">Full Name</label>
-                <div class="input-group auth-input-group border">
-                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                    <input
-                        id="full_name"
-                        type="text"
-                        name="full_name"
-                        class="form-control @error('full_name') is-invalid @enderror"
-                        value="{{ old('full_name') }}"
-                        {{ $activeMode === 'employee' ? 'required autofocus' : '' }}
-                        autocomplete="username"
-                        placeholder="Your full name"
-                    >
-                </div>
-            </div>
-
-            <div class="mb-2">
-                <label for="pin" class="form-label">PIN</label>
-                <div class="input-group auth-input-group border">
-                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    <input
-                        id="pin"
-                        type="password"
-                        name="pin"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        maxlength="4"
-                        class="form-control @error('pin') is-invalid @enderror"
-                        {{ $activeMode === 'employee' ? 'required' : '' }}
-                        autocomplete="current-password"
-                        placeholder="••••"
-                    >
-                    <span class="input-group-text toggle-password" id="togglePin">
-                        <i class="fas fa-eye"></i>
-                    </span>
-                </div>
+        <div class="mb-3">
+            <label for="identifier" class="form-label">Full name or email</label>
+            <div class="input-group auth-input-group border">
+                <span class="input-group-text"><i class="fas fa-user" aria-hidden="true"></i></span>
+                <input id="identifier" name="identifier" type="text" class="form-control"
+                    value="{{ old('identifier', old('full_name', old('email'))) }}" required autofocus
+                    autocomplete="username" placeholder="Your full name or email" aria-describedby="login-help">
             </div>
         </div>
-
-        {{-- Admin fields: email + password --}}
-        <div id="admin-fields" style="display: {{ $activeMode === 'admin' ? 'block' : 'none' }};">
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <div class="input-group auth-input-group border">
-                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        value="{{ old('email') }}"
-                        {{ $activeMode === 'admin' ? 'required autofocus' : '' }}
-                        autocomplete="username"
-                        placeholder="user1@gmail.com"
-                    >
-                </div>
-            </div>
-
-            <div class="mb-2">
-                <label for="password" class="form-label">Password</label>
-                <div class="input-group auth-input-group border">
-                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                    <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        class="form-control @error('password') is-invalid @enderror"
-                        {{ $activeMode === 'admin' ? 'required' : '' }}
-                        autocomplete="current-password"
-                        placeholder="••••••••"
-                    >
-                    <span class="input-group-text toggle-password" id="togglePassword">
-                        <i class="fas fa-eye"></i>
-                    </span>
-                </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password or PIN</label>
+            <div class="input-group auth-input-group border">
+                <span class="input-group-text"><i class="fas fa-lock" aria-hidden="true"></i></span>
+                <input id="password" name="password" type="password" class="form-control" required
+                    autocomplete="current-password" placeholder="Your password or 4-digit PIN"
+                    aria-describedby="login-help">
+                <button type="button" class="input-group-text toggle-password" id="togglePassword"
+                    aria-label="Show password or PIN" aria-pressed="false"><i class="fas fa-eye"
+                        aria-hidden="true"></i></button>
             </div>
         </div>
-
-        <div class="d-flex align-items-center justify-content-between mt-3">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="remember" id="remember" checked>
-                <label class="form-check-label" for="remember" style="font-size: 14px; color: var(--text-soft);">
-                    Remember me
-                </label>
-            </div>
+        <p id="login-help" class="login-help">Use your full name and 4-digit PIN, or your admin email and password.</p>
+        <a href="{{ route('password.request') }}" class="login-help">Forgot admin password?</a>
+        <div class="form-check mt-3 mb-3">
+            <input class="form-check-input" type="checkbox" name="remember" value="1" id="remember" checked>
+            <label class="form-check-label" for="remember">Remember me</label>
         </div>
-
-        <div id="remember-tip" class="remember-tip" style="display: {{ $activeMode === 'employee' ? 'flex' : 'none' }};">
-            <i class="fas fa-circle-info"></i>
-            <span>Always open this app the same way (either this home screen icon or this browser) so "Remember me" keeps working.</span>
-        </div>
-
-        <button type="submit" class="btn btn-brand w-100 text-white py-2">
-            <i class="fas fa-right-to-bracket me-2"></i>Sign In
-        </button>
+        <button type="submit" class="btn btn-brand w-100 text-white py-2"><i class="fas fa-right-to-bracket me-2"
+                aria-hidden="true"></i>Sign In</button>
     </form>
-
-    <div class="auth-card-footer">
-        &copy; {{ date('Y') }} PizzaHappyFamily Attendance System
-    </div>
+    <div class="auth-card-footer">&copy; {{ date('Y') }} PizzaHappyFamily Attendance System</div>
 @endsection
-
 @push('styles')
-<style>
-    .login-mode-toggle {
-        display: flex;
-        background: var(--bg-soft);
-        border-radius: var(--radius-md);
-        padding: 4px;
-        margin-bottom: 24px;
-        gap: 4px;
-    }
+    <style>
+        .login-help {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-soft);
+            margin: 12px 0 18px
+        }
 
-    .login-mode-btn {
-        flex: 1;
-        border: 0;
-        background: transparent;
-        padding: 10px;
-        font-weight: 700;
-        font-size: 13.5px;
-        color: var(--text-soft);
-        border-radius: 10px;
-        cursor: pointer;
-        transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-    }
+        .toggle-password:focus-visible {
+            outline: 2px solid var(--brand-primary);
+            outline-offset: 2px
+        }
 
-    .login-mode-btn:hover:not(.active) {
-        color: var(--text-main);
-        background: rgba(255, 255, 255, 0.6);
-    }
-
-    .login-mode-btn.active {
-        background: #fff;
-        color: var(--text-main);
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
-    }
-
-    #pin {
-        letter-spacing: 0.35em;
-        font-size: 1.05rem;
-    }
-
-    #pin::placeholder {
-        letter-spacing: normal;
-        font-size: 1rem;
-    }
-
-    .btn-brand:disabled {
-        opacity: 0.75;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .remember-tip {
-        align-items: flex-start;
-        gap: 8px;
-        font-size: 12px;
-        line-height: 1.4;
-        color: var(--text-soft);
-        background: var(--bg-soft);
-        border-radius: 10px;
-        padding: 10px 12px;
-        margin-bottom: 16px;
-    }
-
-    .remember-tip i {
-        margin-top: 2px;
-        color: var(--brand-primary);
-    }
-</style>
+        .btn-brand:disabled {
+            opacity: .75;
+            cursor: not-allowed
+        }
+    </style>
 @endpush
-
 @push('scripts')
     <script>
-        document.getElementById('togglePassword').addEventListener('click', function () {
+        const passwordToggle = document.getElementById('togglePassword');
+        passwordToggle.addEventListener('click', () => {
             const input = document.getElementById('password');
-            const icon = this.querySelector('i');
-            const isHidden = input.type === 'password';
-
-            input.type = isHidden ? 'text' : 'password';
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            passwordToggle.setAttribute('aria-pressed', String(show));
+            passwordToggle.setAttribute('aria-label', show ? 'Hide password or PIN' : 'Show password or PIN');
+            passwordToggle.querySelector('i').className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
         });
-
-        document.getElementById('togglePin').addEventListener('click', function () {
-            const input = document.getElementById('pin');
-            const icon = this.querySelector('i');
-            const isHidden = input.type === 'password';
-
-            input.type = isHidden ? 'text' : 'password';
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', () => {
+            const button = loginForm.querySelector('button[type=submit]');
+            button.disabled = true;
+            button.textContent = 'Signing in?';
         });
-
-        const modeButtons = document.querySelectorAll('.login-mode-btn');
-        const employeeFields = document.getElementById('employee-fields');
-        const adminFields = document.getElementById('admin-fields');
-        const loginType = document.getElementById('login_type');
-        const forgotLink = document.getElementById('forgot-password-link');
-        const rememberTip = document.getElementById('remember-tip');
-
-        modeButtons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                modeButtons.forEach(function (b) { b.classList.remove('active'); });
-                btn.classList.add('active');
-
-                const mode = btn.dataset.mode;
-                loginType.value = mode;
-
-                const isEmployee = mode === 'employee';
-                employeeFields.style.display = isEmployee ? 'block' : 'none';
-                adminFields.style.display = isEmployee ? 'none' : 'block';
-                if (forgotLink) {
-                    forgotLink.style.display = isEmployee ? 'none' : 'inline';
-                }
-                if (rememberTip) {
-                    rememberTip.style.display = isEmployee ? 'flex' : 'none';
-                }
-
-                document.getElementById('full_name').required = isEmployee;
-                document.getElementById('pin').required = isEmployee;
-                document.getElementById('email').required = !isEmployee;
-                document.getElementById('password').required = !isEmployee;
-            });
-        });
-
-        document.querySelector('form').addEventListener('submit', function () {
-            const btn = this.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
+        window.addEventListener('pageshow', () => {
+            const button = loginForm.querySelector('button[type=submit]');
+            button.disabled = false;
+            button.textContent = 'Sign In';
         });
     </script>
 @endpush

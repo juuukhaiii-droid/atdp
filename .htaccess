@@ -18,13 +18,17 @@
     # non-public Laravel directory under the web root. Block direct access to
     # them; the app should only ever be reached via index.php or a real file
     # under public/.
-    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules)(/|$) - [F,L]
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
     RewriteRule \.(json|lock|md|yaml|yml|dist|env|example|sql|sqlite)$ - [F,L]
 
     # Vite's built CSS/JS live under public/compiled-assets; route requests
     # for them there explicitly, since the "does this file exist" checks
     # below only see this pinned project-root document root.
     RewriteRule ^compiled-assets/(.*)$ public/compiled-assets/$1 [L]
+    RewriteRule ^css/(.*)$ public/css/$1 [L]
+    RewriteRule ^js/(.*)$ public/js/$1 [L]
+    RewriteRule ^images/(.*)$ public/images/$1 [L]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d

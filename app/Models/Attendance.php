@@ -17,10 +17,20 @@ class Attendance extends Model
         'scanned_at',
         'ip_address',
         'work_summary',
+        'latitude',
+        'longitude',
+        'location_accuracy',
+        'distance_meters',
+        'location_captured_at',
     ];
 
     protected $casts = [
         'scanned_at' => 'datetime',
+        'location_captured_at' => 'datetime',
+        'latitude' => 'float',
+        'longitude' => 'float',
+        'location_accuracy' => 'float',
+        'distance_meters' => 'float',
     ];
 
     public function user(): BelongsTo

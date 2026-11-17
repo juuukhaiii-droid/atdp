@@ -1,0 +1,44 @@
+/* Compact employee attendance flow; independent of external CSS/icon libraries. */
+.gps-attendance-form,.attendance-success{font-size:15px;line-height:1.7;color:#253247}
+.attendance-steps{display:flex;justify-content:center;gap:14px;list-style:none;padding:0;margin:8px 0 24px;font-size:11px;color:#66758a}
+.attendance-steps li{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.attendance-steps li>span{display:grid;place-items:center;width:21px;height:21px;border:1px solid #c5cfdb;border-radius:50%;font-size:10px}
+.attendance-steps .current{font-weight:700;color:#a43e28}.attendance-steps .current>span{background:#a43e28;color:#fff;border-color:#a43e28}
+.attendance-steps .complete{color:#28714d}.attendance-steps .complete>span{background:#e8f5ed;border-color:#bcdbc8}
+.attendance-action-heading{text-align:center;margin-bottom:20px}.attendance-action-heading h1,.attendance-success h1{font-size:27px;line-height:1.4;font-weight:750;margin:8px 0 5px;color:#233044}
+.attendance-action-heading p,.attendance-success>p{font-size:14px;color:#596a80;margin:0}
+.attendance-action-icon{display:grid;place-items:center;width:48px;height:48px;background:#e8f5ed;color:#26734b;font-size:26px;border-radius:15px;margin:auto}
+.attendance-action-icon.is-out{color:#986613;background:#fff4df}
+.attendance-place{border:1px solid #dbe2eb;border-radius:16px;background:#fff;padding:18px 20px;margin-bottom:16px}
+.attendance-place-label{font-size:12px;color:#66758a;display:block;margin-bottom:3px}
+.attendance-place-name{display:block;font-size:20px;line-height:1.5;color:#233044;font-weight:700}
+.attendance-place time,.attendance-place small{display:block;font-size:13px;color:#596a80;margin-top:4px}
+.attendance-place small{font-size:12px;margin-top:7px}
+.gps-attendance-form select,.gps-attendance-form textarea{width:100%;box-sizing:border-box;min-height:46px;border:1px solid #b8c5d6;border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;color:#233044;background-color:#fff}
+.attendance-summary{border:1px solid #dbe2eb;border-radius:12px;background:white;padding:12px 16px;margin-bottom:16px}
+.attendance-summary summary{font-size:14px;font-weight:600;cursor:pointer}.attendance-summary summary span{font-weight:400;color:#66758a;font-size:12px}
+.attendance-summary textarea{margin-top:12px;resize:vertical}
+.attendance-status{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:#edf2f8;color:#435570;font-size:13px;line-height:1.7;margin:0 0 16px}
+.attendance-status::before{content:'';flex-shrink:0;width:7px;height:7px;border-radius:50%;background:#8497b0}
+.attendance-status[data-state=error]{background:#fff0ec;color:#9e3829;border:1px solid #e9c2b8}
+.attendance-status[data-state=error]::before{background:#b5412c}
+.attendance-status[data-state=busy]::before{width:15px;height:15px;border:2px solid #ccd6e3;border-top-color:#a43e28;background:transparent;animation:attendance-spin .9s linear infinite}
+@keyframes attendance-spin{to{transform:rotate(360deg)}}
+.gps-attendance-form [data-location-submit],.attendance-home-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:14px;border-radius:12px;border:0;background:#b84129;color:white;font-size:16px;font-weight:700;line-height:1.6;cursor:pointer;text-decoration:none}
+.gps-attendance-form [data-location-submit]:hover,.attendance-home-button:hover{background:#9e3420;color:white}
+.gps-attendance-form [data-location-submit]:disabled{background:#67768a;cursor:wait}
+.attendance-privacy{font-size:11px;line-height:1.6;text-align:center;color:#66758a;margin:12px 0 6px}
+.attendance-success{text-align:center;padding-top:4px}.attendance-success-mark{display:grid;place-items:center;width:78px;height:78px;border-radius:50%;background:#e3f5e9;color:#26734b;margin:34px auto 18px}
+.attendance-success .attendance-place{margin-top:24px}.attendance-success .attendance-place>span{display:block;font-size:14px;color:#596a80;margin-top:4px}
+.attendance-success .attendance-place>.attendance-saved-badge{display:inline-block;margin-top:13px;padding:4px 10px;border-radius:20px;background:#e8f5ed;color:#28714d;font-size:12px;font-weight:600}
+.attendance-history-link{display:inline-block;color:#52647b;text-decoration:none;font-size:13px;padding:15px 10px}
+.attendance-connection-help{padding:20px;border:1px solid #e7c9b5;border-radius:14px;background:#fff8f0;color:#7d4731;margin:16px 0;text-align:left}
+.attendance-connection-help h2{font-size:17px;font-weight:700;margin:10px 0 8px;color:#713c28}
+.attendance-connection-help p{font-size:14px;line-height:1.8;margin:0 0 10px}
+.attendance-connection-help .connection-help-action{font-weight:600;margin-bottom:0}
+.connection-help-icon{display:grid;place-items:center;background:#f8e2ce;color:#88472c;width:30px;height:30px;border-radius:50%;font-weight:700}
+.connection-help-link{display:flex;align-items:center;justify-content:center;min-height:46px;background:#a43e28;color:white;border-radius:9px;text-decoration:none;font-size:14px;font-weight:600;padding:10px}
+.gps-attendance-form [hidden],.attendance-success [hidden]{display:none!important}
+.gps-attendance-form :is(button,select,textarea,a,summary):focus-visible,.attendance-success a:focus-visible{outline:3px solid #b84129;outline-offset:3px}
+@media(max-width:360px){.attendance-steps{gap:10px;font-size:10px}.attendance-place{padding:16px}.attendance-action-heading h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.attendance-status[data-state=busy]::before{animation:none}}

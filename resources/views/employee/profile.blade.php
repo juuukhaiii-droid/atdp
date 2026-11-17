@@ -103,6 +103,10 @@
         </div>
     @endif
 
+    <form method="POST" action="{{ route('logout') }}" class="mt-3">
+        @csrf
+        <button type="submit" class="btn-logout"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Sign out</button>
+    </form>
 @endsection
 
 @push('styles')

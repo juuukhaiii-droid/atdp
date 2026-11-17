@@ -23,9 +23,9 @@ class ShiftController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'start_time' => ['required'],
-            'end_time' => ['required'],
-            'late_after' => ['required'],
+            'start_time' => ['required', 'date_format:H:i,H:i:s'],
+            'end_time' => ['required', 'date_format:H:i,H:i:s'],
+            'late_after' => ['required', 'date_format:H:i,H:i:s'],
         ]);
 
         Shift::create($validated);
@@ -43,9 +43,9 @@ class ShiftController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'start_time' => ['required'],
-            'end_time' => ['required'],
-            'late_after' => ['required'],
+            'start_time' => ['required', 'date_format:H:i,H:i:s'],
+            'end_time' => ['required', 'date_format:H:i,H:i:s'],
+            'late_after' => ['required', 'date_format:H:i,H:i:s'],
         ]);
 
         $shift->update($validated);
@@ -56,6 +56,9 @@ class ShiftController extends Controller
 
     public function destroy(Shift $shift)
     {
+        if ($shift->employees()->exists()) {
+            return back()->withErrors(['shift' => 'This shift is assigned to employees. Reassign them before deleting it.']);
+        }
         $shift->delete();
 
         return redirect()->route('admin.shifts.index')

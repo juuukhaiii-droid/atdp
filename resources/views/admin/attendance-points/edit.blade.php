@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4">
@@ -8,32 +8,33 @@
         <div class="p-5 sm:p-6">
             <form method="POST" action="{{ route('admin.attendance-points.update', $attendancePoint) }}">
                 @csrf
+                @include('admin.attendance-points.partials.gps-fields')
                 @method('PUT')
 
                 <div class="mb-4">
-                    <label class="block font-semibold text-sm mb-1.5">Name <span class="text-brand-danger">*</span></label>
-                    <input type="text" name="name" value="{{ old('name', $attendancePoint->name) }}" required
+                    <label class="block font-semibold text-sm mb-1.5" for="admin-field-name-1">Name <span class="text-brand-danger">*</span></label>
+                    <input id="admin-field-name-1" type="text" name="name" value="{{ old('name', $attendancePoint->name) }}" required
                            class="w-full border rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-red-600/10 {{ $errors->has('name') ? 'border-red-400' : 'border-slate-200 focus:border-brand-primary' }}">
                     @error('name') <small class="text-brand-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label class="block font-semibold text-sm mb-1.5">Code <span class="text-brand-danger">*</span></label>
-                    <input type="text" name="code" value="{{ old('code', $attendancePoint->code) }}" required
+                    <label class="block font-semibold text-sm mb-1.5" for="admin-field-code-2">Code <span class="text-brand-danger">*</span></label>
+                    <input id="admin-field-code-2" type="text" name="code" value="{{ old('code', $attendancePoint->code) }}" required
                            class="w-full border rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-red-600/10 {{ $errors->has('code') ? 'border-red-400' : 'border-slate-200 focus:border-brand-primary' }}">
                     @error('code') <small class="text-brand-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label class="block font-semibold text-sm mb-1.5">Location</label>
-                    <input type="text" name="location" value="{{ old('location', $attendancePoint->location) }}"
+                    <label class="block font-semibold text-sm mb-1.5" for="admin-field-location-3">Location</label>
+                    <input id="admin-field-location-3" type="text" name="location" value="{{ old('location', $attendancePoint->location) }}"
                            class="w-full border rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-red-600/10 {{ $errors->has('location') ? 'border-red-400' : 'border-slate-200 focus:border-brand-primary' }}">
                     @error('location') <small class="text-brand-danger">{{ $message }}</small> @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label class="block font-semibold text-sm mb-1.5">Department <span class="text-brand-danger">*</span></label>
-                    <select name="department_id" required
+                    <label class="block font-semibold text-sm mb-1.5" for="admin-field-department_id-4">Department <span class="text-brand-danger">*</span></label>
+                    <select id="admin-field-department_id-4" name="department_id" required
                             class="w-full border rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-red-600/10 {{ $errors->has('department_id') ? 'border-red-400' : 'border-slate-200 focus:border-brand-primary' }}">
                         <option value="">-- Select Department --</option>
                         @foreach(App\Models\Department::all() as $dept)
@@ -46,8 +47,8 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block font-semibold text-sm mb-1.5">Status <span class="text-brand-danger">*</span></label>
-                    <select name="status" required
+                    <label class="block font-semibold text-sm mb-1.5" for="admin-field-status-5">Status <span class="text-brand-danger">*</span></label>
+                    <select id="admin-field-status-5" name="status" required
                             class="w-full border rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-red-600/10 {{ $errors->has('status') ? 'border-red-400' : 'border-slate-200 focus:border-brand-primary' }}">
                         <option value="active" {{ old('status', $attendancePoint->status) === 'active' ? 'selected' : '' }}>Active</option>
                         <option value="inactive" {{ old('status', $attendancePoint->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>

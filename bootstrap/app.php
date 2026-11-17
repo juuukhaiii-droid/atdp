@@ -32,14 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // - none of it benefits from browser caching.
         $middleware->web(append: [PreventBackHistoryCache::class]);
 
-        // Production sits behind Hostinger's edge/CDN (hcdn). Without this,
-        // $request->ip() returns the edge server's IP instead of the real
-        // visitor's, which silently breaks the office-WiFi check that
-        // gates attendance check-in/out - it would reject everyone
-        // regardless of their actual network. Hostinger doesn't publish a
-        // fixed edge IP range, so trust the whole proxy chain and read the
-        // standard forwarded headers.
-        $middleware->trustProxies(at: '*');
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

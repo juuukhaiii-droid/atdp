@@ -6,32 +6,13 @@
 
     <div class="section-title" style="margin-top:0;">Attendance History</div>
 
-    @forelse ($records->groupBy(fn ($r) => $r->scanned_at->toDateString()) as $date => $dayRecords)
-        <div class="history-date-label">
-            {{ \Carbon\Carbon::parse($date)->isToday() ? 'Today' : \Carbon\Carbon::parse($date)->format('l, d M Y') }}
-        </div>
-        <div class="app-card mb-3">
-            <div class="card-body p-0">
-                @foreach ($dayRecords as $record)
-                    <div class="activity-row {{ !$loop->last ? 'activity-row-border' : '' }}">
-                        <div class="activity-icon {{ $record->type === 'in' ? 'activity-icon-in' : 'activity-icon-out' }}">
-                            <i class="fas {{ $record->type === 'in' ? 'fa-arrow-right-to-bracket' : 'fa-arrow-right-from-bracket' }}"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="activity-title">{{ $record->type === 'in' ? 'Checked In' : 'Checked Out' }}</div>
-                            <div class="activity-sub">{{ $record->attendancePoint->name ?? 'Unknown location' }}</div>
-                        </div>
-                        <div class="activity-time">{{ $record->scanned_at->format('h:i A') }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
+    @forelse ($records as $record)
+        <div class="app-card mb-3">@include('employee.attendance.day')</div>
     @empty
-        <div class="app-card">
-            <div class="card-body text-center text-muted py-4 small">
-                No attendance records yet.
-            </div>
-        </div>
+        <div class="app-card"><div class="card-body text-center py-4">
+            <p>No attendance records yet.</p>
+            <a href="{{ route('attendance.show.qr') }}" class="btn btn-danger">Scan QR to Check In</a>
+        </div></div>
     @endforelse
 
     @if ($records->hasPages())

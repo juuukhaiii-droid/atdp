@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-4">
@@ -16,10 +16,10 @@
                     <label class="block font-semibold text-sm mb-1.5">Employee</label>
                     <select name="employee_id" class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         <option value="">All Employees</option>
-                        @foreach ($records->unique('employee_id') as $record)
-                            <option value="{{ $record->employee_id }}"
-                                    {{ request('employee_id') == $record->employee_id ? 'selected' : '' }}>
-                                {{ $record->employee->full_name }}
+                        @foreach ($employees as $employee)
+                            <option value="{{ $employee->id }}"
+                                    {{ request('employee_id') == $employee->id ? 'selected' : '' }}>
+                                {{ $employee->full_name }}
                             </option>
                         @endforeach
                     </select>

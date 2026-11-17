@@ -19,39 +19,35 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create Departments
-        $deptIT = Department::create(['name' => 'IT']);
-        $deptHR = Department::create(['name' => 'Human Resources']);
-        $deptFinance = Department::create(['name' => 'Finance']);
-        $deptOps = Department::create(['name' => 'Operations']);
+        $deptIT = Department::firstOrCreate(['name' => 'IT']);
+        $deptHR = Department::firstOrCreate(['name' => 'Human Resources']);
+        $deptFinance = Department::firstOrCreate(['name' => 'Finance']);
+        $deptOps = Department::firstOrCreate(['name' => 'Operations']);
 
         // Create Shifts
-        $shiftFullDay = Shift::create([
-            'name' => 'Full Day',
+        $shiftFullDay = Shift::firstOrCreate(['name' => 'Full Day'], [
             'start_time' => '08:00:00',
             'end_time' => '17:00:00',
             'late_after' => '08:30:00'
         ]);
-        $shiftMorning = Shift::create([
-            'name' => 'Morning',
+        $shiftMorning = Shift::firstOrCreate(['name' => 'Morning'], [
             'start_time' => '08:00:00',
             'end_time' => '12:00:00',
             'late_after' => '08:30:00'
         ]);
-        $shiftEvening = Shift::create([
-            'name' => 'Evening',
+        $shiftEvening = Shift::firstOrCreate(['name' => 'Evening'], [
             'start_time' => '14:00:00',
             'end_time' => '18:00:00',
             'late_after' => '14:30:00'
         ]);
-        $shiftNight = Shift::create([
-            'name' => 'Night',
+        $shiftNight = Shift::firstOrCreate(['name' => 'Night'], [
             'start_time' => '18:00:00',
             'end_time' => '06:00:00',
             'late_after' => '18:30:00'
         ]);
 
         // Get existing users and create employee records for them
-        $users = User::all();
+        $users = User::where('role', 'employee')->get();
 
         foreach ($users as $user) {
             // If user doesn't already have an employee record, create one
@@ -62,7 +58,7 @@ class DatabaseSeeder extends Seeder
                     'full_name' => $user->name,
                     'email' => $user->email,
                     'phone' => '0900000000',
-                    'pin' => str_pad($user->id, 4, '0', STR_PAD_LEFT),
+                    'pin' => \Illuminate\Support\Facades\Hash::make(str_pad($user->id, 4, '0', STR_PAD_LEFT)),
                     'department_id' => $user->role === 'admin' ? $deptIT->id : $deptOps->id,
                     'shift_id' => $shiftMorning->id,
                     'position' => $user->role === 'admin' ? 'Manager' : 'Staff',

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4">
@@ -25,38 +25,38 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Employee Code</label>
-                            <input type="text" name="employee_code" value="{{ $employee->employee_code }}" required
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-employee_code-1">Employee Code</label>
+                            <input id="admin-field-employee_code-1" type="text" name="employee_code" value="{{ $employee->employee_code }}" required
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         </div>
 
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Full Name</label>
-                            <input type="text" name="full_name" value="{{ $employee->full_name }}" required
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-full_name-2">Full Name</label>
+                            <input id="admin-field-full_name-2" type="text" name="full_name" value="{{ $employee->full_name }}" required
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         </div>
 
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Phone</label>
-                            <input type="text" name="phone" value="{{ $employee->phone }}"
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-phone-3">Phone</label>
+                            <input id="admin-field-phone-3" type="text" name="phone" value="{{ $employee->phone }}"
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         </div>
 
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Email</label>
-                            <input type="email" name="email" value="{{ $employee->email }}"
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-email-4">Email</label>
+                            <input id="admin-field-email-4" type="email" name="email" value="{{ $employee->email }}"
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         </div>
 
                         <div class="md:col-span-4">
-                            <label class="block font-semibold text-sm mb-1.5">New PIN (optional)</label>
-                            <input type="password" name="pin"
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-pin-5">New PIN (optional)</label>
+                            <input id="admin-field-pin-5" type="password" name="pin"
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         </div>
 
                         <div class="md:col-span-4">
-                            <label class="block font-semibold text-sm mb-1.5">Department</label>
-                            <select name="department_id" required
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-department_id-6">Department</label>
+                            <select id="admin-field-department_id-6" name="department_id" required
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                                 @foreach($departments as $department)
                                     <option value="{{ $department->id }}" {{ $employee->department_id == $department->id ? 'selected' : '' }}>
@@ -67,8 +67,8 @@
                         </div>
 
                         <div class="md:col-span-4">
-                            <label class="block font-semibold text-sm mb-1.5">Shift</label>
-                            <select name="shift_id" required
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-shift_id-7">Shift</label>
+                            <select id="admin-field-shift_id-7" name="shift_id" required
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                                 @foreach($shifts as $shift)
                                     <option value="{{ $shift->id }}" {{ $employee->shift_id == $shift->id ? 'selected' : '' }}>
@@ -79,14 +79,15 @@
                         </div>
 
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Position</label>
-                            <input type="text" name="position" value="{{ $employee->position }}"
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-position-8">Position</label>
+                            <input id="admin-field-position-8" type="text" name="position" value="{{ $employee->position }}"
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         </div>
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Employee Photo</label>
-                            <input type="file" name="photo" accept="image/*"
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-photo-9">Employee Photo</label>
+                            <input id="admin-field-photo-9" type="file" name="photo" accept="image/*"
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                            <p class="text-ink-soft text-sm mt-2">JPG, PNG or WebP. Maximum photo size: 10 MB.</p>
                             @if($employee->photo)
                                 <div class="mt-2">
                                     <img src="{{ asset('files/' . $employee->photo) }}" alt="Employee Photo" width="90"
@@ -96,8 +97,8 @@
                         </div>
 
                         <div class="md:col-span-6">
-                            <label class="block font-semibold text-sm mb-1.5">Status</label>
-                            <select name="status" required
+                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-status-10">Status</label>
+                            <select id="admin-field-status-10" name="status" required
                                 class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                                 <option value="active" {{ $employee->status === 'active' ? 'selected' : '' }}>Active</option>
                                 <option value="inactive" {{ $employee->status === 'inactive' ? 'selected' : '' }}>Inactive
