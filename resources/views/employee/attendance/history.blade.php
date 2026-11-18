@@ -1,62 +1,37 @@
 @extends('layouts.employee-app')
-
-@section('title', 'History')
-
+@section('title', 'Attendance History')
 @section('content')
-
-    <div class="section-title" style="margin-top:0;">Attendance History</div>
-
-    @forelse ($records as $record)
-        <div class="app-card mb-3">@include('employee.attendance.day')</div>
-    @empty
-        <div class="app-card"><div class="card-body text-center py-4">
-            <p>No attendance records yet.</p>
-            <a href="{{ route('attendance.show.qr') }}" class="btn btn-danger">Scan QR to Check In</a>
-        </div></div>
-    @endforelse
-
-    @if ($records->hasPages())
-        <div class="d-flex justify-content-center mt-2 mb-3">
-            {{ $records->links() }}
-        </div>
-    @endif
-
+<div class="history-heading"><div><span class="section-title">ATTENDANCE HISTORY</span><h1>ប្រវត្តិវត្តមាន</h1></div><span class="history-count">{{ $records->total() }} ថ្ងៃ</span></div>
+<form class="history-filters" method="GET" action="{{ route('employee.attendance.history') }}">
+    <div><label for="history-month">ខែ</label><input type="month" id="history-month" name="month" value="{{ $month }}" required></div>
+    <div><label for="history-status">ស្ថានភាព</label><select id="history-status" name="status"><option value="">ទាំងអស់</option value="present" @selected($status === 'present')>មានវត្តមាន</option><option value="late" @selected($status === 'late')>មកយឺត</option><option value="absent" @selected($status === 'absent')>អវត្តមាន</option></select></div>
+    <button type="submit">មើល</button>
+</form>
+<div class="history-stats">
+    <div><span>ថ្ងៃមានវត្តមាន</span><strong>{{ $stats['present'] }} <small>ថ្ងៃ</small></strong></div>
+    <div><span>ថ្ងៃមកយឺត</span><strong class="history-amber">{{ $stats['late'] }} <small>ថ្ងៃ</small></strong></div>
+    <div><span>រយៈពេលចូល–ចេញ</span><strong>{{ intdiv($stats['span_minutes'], 60) }}<small>ម៉</small> {{ $stats['span_minutes'] % 60 }}<small>ន</small></strong></div>
+    <div><span>យឺតសរុប</span><strong class="history-amber">{{ $stats['late_minutes'] }} <small>នាទី</small></strong></div>
+</div>
+<div class="history-list-title"><span>{{ \Carbon\Carbon::parse($month . '-01')->format('F Y') }}</span><small>រយៈពេលមិនទាន់ដកម៉ោងសម្រាក</small></div>
+@forelse ($records as $record)
+    @php
+        $date = \Carbon\Carbon::parse($record->attendance_date);
+        $weekdays = ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
+    @endphp
+    <article class="history-day">
+        <div class="history-day-header"><div class="history-day-date"><div class="history-date-tile"><strong>{{ $date->format('d') }}</strong><span>{{ $date->format('M') }}</span></div><div><h2>ថ្ងៃ{{ $weekdays[$date->dayOfWeek] }}</h2><span>{{ $date->format('d/m/Y') }}</span></div></div><span class="history-badge is-{{ $record->status }}">{{ ['present' => 'មានវត្តមាន', 'late' => 'មកយឺត', 'absent' => 'អវត្តមាន'][$record->status] ?? $record->status }}</span></div>
+        <div class="history-time-grid"><div><span>ចូលធ្វើការ</span><strong>{{ $record->check_in_time ? substr($record->check_in_time, 0, 5) : '--:--' }}</strong></div><div><span>ចេញពីធ្វើការ</span><strong>{{ $record->check_out_time ? substr($record->check_out_time, 0, 5) : '--:--' }}</strong></div><div><span>រយៈពេល</span><strong>{{ $record->span_minutes !== null ? intdiv($record->span_minutes, 60) . 'ម៉ ' . $record->span_minutes % 60 . 'ន' : '—' }}</strong></div></div>
+        <div class="history-day-bottom"><span>{{ $record->attendancePoint?->name ?? 'មិនបានកំណត់ទីតាំង' }}</span>@if($record->late_minutes > 0)<span class="history-amber">យឺត {{ $record->late_minutes }} នាទី</span>@endif</div>
+        @if($record->is_override)<div class="history-source">កែតម្រូវដោយអ្នកគ្រប់គ្រង</div>@endif
+        @if($record->note)<p class="history-note">{{ $record->note }}</p>@endif
+        @if($record->check_in_time && !$record->check_out_time)<p class="history-note">មិនទាន់មានម៉ោងចេញ</p>@endif
+    </article>
+@empty
+    <div class="history-empty"><strong>មិនមានទិន្នន័យសម្រាប់ជម្រើសនេះ</strong><p>No attendance records yet.</p><a href="{{ route('attendance.show.qr') }}">ស្កេន QR</a></div>
+@endforelse
+@if ($records->hasPages())<div class="history-pagination">{{ $records->links() }}</div>@endif
 @endsection
-
 @push('styles')
-<style>
-    .history-date-label {
-        font-size: 12.5px;
-        font-weight: 700;
-        color: var(--text-soft);
-        margin: 4px 2px 8px;
-    }
-
-    .activity-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 13px 16px;
-    }
-
-    .activity-row-border { border-bottom: 1px solid var(--border-soft); }
-
-    .activity-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        flex-shrink: 0;
-    }
-
-    .activity-icon-in { background: #dcfce7; color: #16a34a; }
-    .activity-icon-out { background: #fef3c7; color: #f59e0b; }
-
-    .activity-title { font-weight: 700; font-size: 13.5px; }
-    .activity-sub { font-size: 12px; color: var(--text-soft); }
-    .activity-time { font-weight: 700; font-size: 12.5px; }
-</style>
+<link rel="stylesheet" href="{{ asset('css/attendance-history.css') }}?v={{ filemtime(public_path('css/attendance-history.css')) }}">
 @endpush

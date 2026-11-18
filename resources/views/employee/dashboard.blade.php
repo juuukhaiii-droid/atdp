@@ -48,7 +48,7 @@
                 @else
                     <span class="status-pill status-pill-idle"><i class="fas fa-moon me-1"></i>Not Checked In</span>
                 @endif
-            </div>
+            </div>  
 
             @if ($durationLabel)
                 <div class="status-duration">{{ $durationLabel }}</div>

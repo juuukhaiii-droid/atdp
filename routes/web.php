@@ -56,6 +56,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('shifts', App\Http\Controllers\Admin\ShiftController::class)->except('show');
 
         // Attendance Points
+        Route::get('attendance-points/{attendancePoint}/qr', [App\Http\Controllers\Admin\AttendancePointController::class, 'qr'])->name('attendance-points.qr');
         Route::resource('attendance-points', App\Http\Controllers\Admin\AttendancePointController::class)->except('show');
 
         // Attendance Records

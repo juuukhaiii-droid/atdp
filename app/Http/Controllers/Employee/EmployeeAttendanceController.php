@@ -107,12 +107,35 @@ class EmployeeAttendanceController extends Controller
     public function history(Request $request, \App\Services\AttendanceSummaryService $summary)
     {
         $this->requireActiveEmployee($request);
-        $days = $summary->summarize(['employee_id' => $request->user()->employee->id]);
+        $request->validate([
+            'month' => ['nullable', 'date_format:Y-m'],
+            'status' => ['nullable', 'in:present,late,absent'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+        $month = $request->input('month') ?: now()->format('Y-m');
+        $status = $request->input('status');
+        $days = $summary->summarize(['employee_id' => $request->user()->employee->id, 'month' => $month]);
+        $days->each(function ($day) {
+            $day->span_minutes = null;
+            if ($day->check_in_time && $day->check_out_time) {
+                $in = \Illuminate\Support\Carbon::parse($day->attendance_date . ' ' . $day->check_in_time);
+                $out = \Illuminate\Support\Carbon::parse($day->attendance_date . ' ' . $day->check_out_time);
+                if ($out->lt($in) && $day->employee->shift?->end_time < $day->employee->shift?->start_time) $out->addDay();
+                if ($out->gte($in)) $day->span_minutes = (int) floor($in->diffInMinutes($out));
+            }
+        });
+        $stats = [
+            'present' => $days->whereIn('status', ['present', 'late'])->count(),
+            'late' => $days->where('status', 'late')->count(),
+            'late_minutes' => $days->sum('late_minutes'),
+            'span_minutes' => $days->sum('span_minutes'),
+        ];
+        if ($status) $days = $days->where('status', $status)->values();
         $page = max(1, (int) $request->query('page', 1));
         $records = new \Illuminate\Pagination\LengthAwarePaginator($days->forPage($page, 15)->values(), $days->count(), 15, $page, [
-            'path' => $request->url(),
+            'path' => $request->url(), 'query' => $request->only(['month', 'status']),
         ]);
-        return view('employee.attendance.history', compact('records'));
+        return view('employee.attendance.history', compact('records', 'month', 'status', 'stats'));
     }
 
     public function success(Request $request)

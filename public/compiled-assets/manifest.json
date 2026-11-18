@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-B-1YC9fv.css",
+    "file": "assets/app-PsRhlz7X.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -15,7 +15,7 @@
     "isEntry": true
   },
   "resources/js/attendance-scanner.js": {
-    "file": "assets/attendance-scanner-B7LNLCGX.js",
+    "file": "assets/attendance-scanner-BRJnb14M.js",
     "name": "attendance-scanner",
     "src": "resources/js/attendance-scanner.js",
     "isEntry": true

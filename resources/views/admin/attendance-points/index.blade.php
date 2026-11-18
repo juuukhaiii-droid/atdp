@@ -55,8 +55,8 @@
                                 </td>
 
                                 <td class="px-3.5 py-4 border-b border-slate-100">
-                                    @if($point->qr_image)
-                                        <img src="{{ asset($point->qr_image) }}" width="60" alt="QR code for {{ $point->name }}" class="rounded-lg border border-slate-200 p-1 cursor-pointer"
+                                    @if($point->qr_token)
+                                        <img src="{{ route('admin.attendance-points.qr', $point) }}" width="60" alt="QR code for {{ $point->name }}" class="rounded-lg border border-slate-200 p-1 cursor-pointer"
                                              @click="openQr = {{ $point->id }}">
                                     @else
                                         <span class="text-ink-soft text-sm">No QR</span>
@@ -65,12 +65,12 @@
 
                                 <td class="px-3.5 py-4 border-b border-slate-100">
                                     <div class="flex gap-2 items-center">
-                                        @if($point->qr_image)
+                                        @if($point->qr_token)
                                             <button class="inline-flex items-center gap-1.5 rounded-[10px] bg-green-600 text-white text-sm font-semibold px-3 py-1.5 hover:opacity-90 transition"
                                                     @click="openQr = {{ $point->id }}" title="Print QR Code">
                                                 <i class="fas fa-print"></i> Print
                                             </button>
-                                            <a href="{{ asset($point->qr_image) }}" download class="inline-flex items-center rounded-[10px] bg-sky-500 text-white text-sm font-semibold px-3 py-1.5 hover:bg-sky-600 transition" title="Download QR Code" aria-label="Download QR code for {{ $point->name }}">
+                                            <a href="{{ route('admin.attendance-points.qr', $point) }}" download class="inline-flex items-center rounded-[10px] bg-sky-500 text-white text-sm font-semibold px-3 py-1.5 hover:bg-sky-600 transition" title="Download QR Code" aria-label="Download QR code for {{ $point->name }}">
                                                 <i class="fas fa-download"></i>
                                             </a>
                                         @endif
@@ -102,7 +102,7 @@
                                                 <button type="button" class="text-ink-soft hover:text-ink" @click="openQr = null" aria-label="Close"><i class="fas fa-xmark"></i></button>
                                             </div>
                                             <div class="text-center p-6">
-                                                <img src="{{ asset($point->qr_image) }}" class="max-w-full mx-auto" alt="QR Code">
+                                                <img src="{{ route('admin.attendance-points.qr', $point) }}" class="max-w-full mx-auto" alt="QR Code">
                                                 <p class="mt-3 text-ink-soft text-sm">Department: <strong class="text-ink">{{ $point->department->name ?? 'N/A' }}</strong></p>
                                                 <p class="text-ink-soft text-sm">Location: <strong class="text-ink">{{ $point->location }}</strong></p>
                                             </div>

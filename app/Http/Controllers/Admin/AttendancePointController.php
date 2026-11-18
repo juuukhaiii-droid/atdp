@@ -17,6 +17,18 @@ class AttendancePointController extends Controller
         return view('admin.attendance-points.index', compact('attendancePoints'));
     }
 
+    public function qr(AttendancePoint $attendancePoint)
+    {
+        abort_unless(filled($attendancePoint->qr_token), 404);
+        $url = rtrim(config('app.url'), '/') . '/attendance/' . $attendancePoint->qr_token;
+        return response((string) QrCode::format('svg')->size(400)->margin(4)->generate($url), 200, [
+            'Content-Type' => 'image/svg+xml',
+            'Content-Disposition' => 'inline; filename="qr_' . $attendancePoint->id . '.svg"',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     public function create()
     {
         $departments = Department::all();

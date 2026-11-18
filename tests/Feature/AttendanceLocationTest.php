@@ -104,6 +104,21 @@ class AttendanceLocationTest extends TestCase
             ->assertSee('18:00')->assertSee('06:00');
     }
 
+    public function test_history_month_and_status_filters_keep_monthly_stats_and_duration(): void
+    {
+        $service = app(\App\Services\AttendanceSummaryService::class);
+        $service->upsertOverride($this->employeeUser->employee, '2026-11-01', '08:00:00', '17:30:00', $this->point->id, 'November shift');
+        $service->upsertOverride($this->employeeUser->employee, '2026-10-01', '08:00:00', '17:00:00', $this->point->id, 'October shift');
+        $this->actingAs($this->employeeUser)->get(route('employee.attendance.history', ['month' => '2026-11']))
+            ->assertOk()->assertSee('November shift')->assertDontSee('October shift')
+            ->assertViewHas('stats', fn ($stats) => $stats['present'] === 1 && $stats['span_minutes'] === 570)
+            ->assertViewHas('records', fn ($records) => $records->first()->span_minutes === 570);
+        $this->get(route('employee.attendance.history', ['month' => '2026-11', 'status' => 'late']))
+            ->assertOk()->assertViewHas('records', fn ($records) => $records->total() === 0)
+            ->assertViewHas('stats', fn ($stats) => $stats['present'] === 1);
+        $this->getJson(route('employee.attendance.history', ['month' => 'bad']))->assertUnprocessable();
+    }
+
     public function test_check_out_requires_a_new_location_and_saves_work_summary(): void
     {
         $this->actingAs($this->employeeUser)->post(route('employee.attendance.checkin'), $this->coordinates());

@@ -10,9 +10,9 @@ test('maps printed QR tokens to current origin without following foreign website
     }
 });
 
-function fixture({ secure = true, error, decoder } = {}) {
+function fixture({ secure = true, error, decoder, autoStart = false } = {}) {
     const nodes = {};
-    for (const name of ['scanner-video', 'scanner-status', 'camera-panel', 'camera-start', 'camera-stop', 'qr-photo', 'copy-link', 'browser-notice']) {
+    for (const name of ['scanner-video', 'scanner-status', 'camera-panel', 'camera-start', 'camera-stop', 'copy-link', 'browser-notice']) {
         nodes[name] = { hidden: true, disabled: false, dataset: {}, events: {}, textContent: '',
             addEventListener(event, callback) { this.events[event] = callback; } };
     }
@@ -30,7 +30,7 @@ function fixture({ secure = true, error, decoder } = {}) {
         createElement: () => ({ getContext: () => ({ drawImage() {}, getImageData: () => ({ data: [], width: 1, height: 1 }) }) }),
         addEventListener() {},
     };
-    const scanner = createScanner({ querySelector: (selector) => nodes[selector.slice(6, -1)] }, browser, decoder || (() => null));
+    const scanner = createScanner({ dataset: { autoStart: String(autoStart) }, querySelector: (selector) => nodes[selector.slice(6, -1)] }, browser, decoder || (() => null));
     return { nodes, scanner, state: () => ({ stopped, requested, navigated }), frame: () => frame(200) };
 }
 test('HTTP shows actionable feedback without requesting camera or leaving black preview', async () => {
@@ -38,6 +38,25 @@ test('HTTP shows actionable feedback without requesting camera or leaving black 
     assert.match(f.nodes['scanner-status'].textContent, /HTTPS/);
     assert.equal(f.nodes['camera-panel'].hidden, true);
     assert.equal(f.state().requested, 0);
+});
+
+test('scan page automatically opens camera and hides the extra start button', async () => {
+    const f = fixture({ autoStart: true });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(f.state().requested, 1);
+    assert.equal(f.nodes['camera-panel'].hidden, false);
+    assert.equal(f.nodes['camera-start'].hidden, true);
+    f.scanner.release();
+});
+
+test('automatic camera denial exposes a manual retry and HTTP never auto starts', async () => {
+    const f = fixture({ autoStart: true, error: 'NotAllowedError' });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(f.nodes['camera-start'].hidden, false);
+    assert.equal(f.nodes['camera-start'].disabled, false);
+    assert.equal(f.state().requested, 1);
+    const blocked = fixture({ autoStart: true, secure: false });
+    assert.equal(blocked.state().requested, 0);
 });
 test('permission denial permits retry and hides camera panel', async () => {
     const f = fixture({ error: 'NotAllowedError' }); await f.scanner.startCamera();
@@ -59,29 +78,3 @@ test('unrelated QR never navigates to an external page', async () => {
     f.scanner.release(); assert.equal(f.state().stopped, 1);
 });
 
-test('a photo finishing after camera restart cannot navigate or overwrite camera status', async () => {
-    const originalImage = globalThis.Image;
-    const originalCreate = URL.createObjectURL;
-    const originalRevoke = URL.revokeObjectURL;
-    let image, revoked = false;
-    globalThis.Image = class { constructor() { image = this; this.naturalWidth = 100; this.naturalHeight = 100; } };
-    URL.createObjectURL = () => 'blob:test';
-    URL.revokeObjectURL = () => { revoked = true; };
-    try {
-        const f = fixture({ decoder: () => ({ data: `/attendance/${token}` }) });
-        f.nodes['qr-photo'].files = [{ type: 'image/png', size: 100 }];
-        const pending = f.nodes['qr-photo'].events.change();
-        await f.scanner.startCamera();
-        image.onload();
-        await pending;
-        assert.equal(f.state().navigated, undefined);
-        assert.equal(f.nodes['camera-panel'].hidden, false);
-        assert.equal(f.nodes['scanner-status'].textContent, 'Place the QR inside the frame.');
-        assert.equal(revoked, true);
-        f.scanner.release();
-    } finally {
-        globalThis.Image = originalImage;
-        URL.createObjectURL = originalCreate;
-        URL.revokeObjectURL = originalRevoke;
-    }
-});

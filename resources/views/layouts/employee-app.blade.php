@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -9,7 +10,9 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -32,9 +35,15 @@
             --tab-bar-h: 68px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             background: var(--bg-soft);
@@ -45,7 +54,9 @@
             padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom) + 12px);
         }
 
-        .khmer-text { font-family: 'Noto Sans Khmer', sans-serif; }
+        .khmer-text {
+            font-family: 'Noto Sans Khmer', sans-serif;
+        }
 
         /* ---- Content ---- */
         .app-content {
@@ -54,16 +65,38 @@
             margin: 0 auto;
         }
 
-        .alert { border-radius: var(--radius-md); border: 0; margin-bottom: 14px; }
-        .alert-success { background: #dcfce7; color: #166534; }
-        .alert-danger { background: #fee2e2; color: #991b1b; }
-        .alert-warning { background: #fef3c7; color: #92400e; }
-        .alert-info { background: #dbeafe; color: #1e40af; }
+        .alert {
+            border-radius: var(--radius-md);
+            border: 0;
+            margin-bottom: 14px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
 
         /* ---- Bottom Tab Bar ---- */
         .tab-bar {
             position: fixed;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             height: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             background: #ffffff;
@@ -129,7 +162,8 @@
             transition: transform 0.2s ease;
         }
 
-        .tab-scan-btn:hover, .tab-scan-btn:active {
+        .tab-scan-btn:hover,
+        .tab-scan-btn:active {
             color: #fff;
             transform: translateY(-2px) scale(1.03);
         }
@@ -151,7 +185,9 @@
             box-shadow: var(--card-shadow);
         }
 
-        .app-card .card-body { padding: 18px; }
+        .app-card .card-body {
+            padding: 18px;
+        }
 
         .section-title {
             font-size: 13px;
@@ -163,11 +199,13 @@
         }
 
         @media (min-width: 576px) {
-            .app-content { padding-top: 20px; }
+            .app-content {
+                padding-top: 20px;
+            }
         }
-
     </style>
 </head>
+
 <body>
 
     {{-- Content --}}
@@ -182,11 +220,13 @@
         @endif
 
         @if (session('success'))
-            <div class="alert alert-success" role="alert"><i class="fas fa-check-circle me-2"></i>{{ session('success') }}</div>
+            <div class="alert alert-success" role="alert"><i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            </div>
         @endif
 
         @if (session('error'))
-            <div class="alert alert-danger" role="alert"><i class="fas fa-times-circle me-2"></i>{{ session('error') }}</div>
+            <div class="alert alert-danger" role="alert"><i class="fas fa-times-circle me-2"></i>{{ session('error') }}
+            </div>
         @endif
 
         @yield('content')
@@ -194,11 +234,13 @@
 
     {{-- Bottom Tab Bar --}}
     <nav class="tab-bar">
-        <a href="{{ route('employee.dashboard') }}" class="tab-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
+        <a href="{{ route('employee.dashboard') }}"
+            class="tab-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
             <i class="fas fa-house"></i>
             <span>Home</span>
         </a>
-        <a href="{{ route('employee.attendance.history') }}" class="tab-item {{ request()->routeIs('employee.attendance.history') ? 'active' : '' }}">
+        <a href="{{ route('employee.attendance.history') }}"
+            class="tab-item {{ request()->routeIs('employee.attendance.history') ? 'active' : '' }}">
             <i class="fas fa-clock-rotate-left"></i>
             <span>History</span>
         </a>
@@ -210,7 +252,8 @@
             <span class="tab-scan-label">Scan</span>
         </div>
 
-        <a href="{{ route('employee.profile') }}" class="tab-item {{ request()->routeIs('employee.profile') ? 'active' : '' }}">
+        <a href="{{ route('employee.profile') }}"
+            class="tab-item {{ request()->routeIs('employee.profile') ? 'active' : '' }}">
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </a>
@@ -218,4 +261,5 @@
 
     @stack('scripts')
 </body>
+
 </html>
