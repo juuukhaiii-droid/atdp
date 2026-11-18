@@ -119,6 +119,38 @@ class AttendanceLocationTest extends TestCase
         $this->getJson(route('employee.attendance.history', ['month' => 'bad']))->assertUnprocessable();
     }
 
+    public function test_admin_can_create_edit_delete_and_recreate_employee_day_without_destroying_evidence(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $employee = $this->employeeUser->employee;
+        $update = route('admin.employees.attendance.update', $employee);
+        $delete = route('admin.employees.attendance.destroy', $employee);
+        $data = ['date' => today()->toDateString(), 'check_in_time' => '08:00', 'check_out_time' => '17:00', 'attendance_point_id' => $this->point->id];
+        $this->actingAs($admin)->post($update, $data)->assertSessionHasNoErrors();
+        $this->post($update, array_merge($data, ['check_out_time' => '18:00']))->assertSessionHasNoErrors();
+        $service = app(\App\Services\AttendanceSummaryService::class);
+        $this->assertSame('18:00', $service->forEmployeeOnDate($employee->id, $data['date'])->check_out_time);
+        $this->delete($delete, ['date' => $data['date']])->assertRedirect();
+        $this->assertNull($service->forEmployeeOnDate($employee->id, $data['date']));
+        $this->assertSame(1, \App\Models\AttendanceRecord::onlyTrashed()->count());
+        $this->post($update, $data)->assertSessionHasNoErrors();
+        $this->assertSame(1, \App\Models\AttendanceRecord::withTrashed()->count());
+        $this->assertNotNull($service->forEmployeeOnDate($employee->id, $data['date']));
+        $this->actingAs($this->employeeUser)->delete($delete, ['date' => $data['date']])->assertForbidden();
+    }
+
+    public function test_admin_delete_day_removes_raw_events_from_summaries_but_preserves_other_dates(): void
+    {
+        foreach ([today()->subDay(), today()] as $date) {
+            Attendance::create(['user_id' => $this->employeeUser->id, 'attendance_point_id' => $this->point->id, 'type' => 'in', 'scanned_at' => $date->setTime(8, 0), 'ip_address' => '127.0.0.1']);
+        }
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->delete(route('admin.employees.attendance.destroy', $this->employeeUser->employee), ['date' => today()->toDateString()])->assertRedirect();
+        $this->assertSame(1, Attendance::count());
+        $this->assertSame(1, Attendance::onlyTrashed()->count());
+        $this->assertNull(app(\App\Services\AttendanceSummaryService::class)->forEmployeeOnDate($this->employeeUser->employee->id, today()->toDateString()));
+    }
+
     public function test_check_out_requires_a_new_location_and_saves_work_summary(): void
     {
         $this->actingAs($this->employeeUser)->post(route('employee.attendance.checkin'), $this->coordinates());

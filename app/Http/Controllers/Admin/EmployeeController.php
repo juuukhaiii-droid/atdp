@@ -141,6 +141,14 @@ class EmployeeController extends Controller
             'note' => ['nullable', 'string', 'max:255'],
         ]);
 
+        if (!empty($validated['check_out_time']) && empty($validated['check_in_time'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['check_in_time' => 'Enter check-in before adding check-out.']);
+        }
+        $overnight = $employee->shift && $employee->shift->end_time < $employee->shift->start_time;
+        if (!$overnight && !empty($validated['check_out_time']) && $validated['check_out_time'] < $validated['check_in_time']) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['check_out_time' => 'Check-out must be after check-in for this shift.']);
+        }
+
         $attendanceSummary->upsertOverride(
             $employee,
             $validated['date'],
@@ -157,6 +165,23 @@ class EmployeeController extends Controller
             ])
             ->with('success', 'Attendance updated for ' . $validated['date'] . '.');
     }
+    public function destroyAttendance(Request $request, Employee $employee)
+    {
+        $validated = $request->validate(['date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today']]);
+        [$start, $end] = app(\App\Services\AttendanceWorkday::class)->bounds($employee, $validated['date']);
+        DB::transaction(function () use ($employee, $validated, $start, $end) {
+            if ($employee->user_id) User::whereKey($employee->user_id)->lockForUpdate()->firstOrFail();
+            $events = \App\Models\Attendance::where('user_id', $employee->user_id ?? 0)
+                ->where('scanned_at', '>=', $start)->where('scanned_at', '<', $end);
+            $overrides = $employee->attendanceRecords()->whereDate('attendance_date', $validated['date']);
+            abort_unless($events->exists() || $overrides->exists(), 404);
+            $events->delete();
+            $overrides->delete();
+        });
+        return redirect()->route('admin.employees.show', ['employee' => $employee, 'date' => $validated['date']])
+            ->with('success', 'Attendance deleted for ' . $validated['date'] . '.');
+    }
+
     public function edit(Employee $employee)
     {
         $departments = Department::all();
@@ -215,7 +240,7 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        if ($employee->attendanceRecords()->exists() || \App\Models\Attendance::where('user_id', $employee->user_id)->exists()) {
+        if ($employee->attendanceRecords()->withTrashed()->exists() || \App\Models\Attendance::withTrashed()->where('user_id', $employee->user_id)->exists()) {
             return back()->withErrors(['employee' => 'This employee has attendance history. Set their status inactive instead of deleting them.']);
         }
         DB::transaction(function () use ($employee) {

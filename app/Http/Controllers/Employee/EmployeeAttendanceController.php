@@ -78,8 +78,11 @@ class EmployeeAttendanceController extends Controller
                 throw ValidationException::withMessages(['attendance' => 'Attendance has already changed. Refresh this page before trying again.']);
             }
             return Attendance::create(array_merge($location, [
-                'user_id' => Auth::id(), 'attendance_point_id' => $point->id,
-                'type' => $type, 'scanned_at' => now(), 'ip_address' => $request->ip(),
+                'user_id' => Auth::id(),
+                'attendance_point_id' => $point->id,
+                'type' => $type,
+                'scanned_at' => now(),
+                'ip_address' => $request->ip(),
                 'work_summary' => $type === 'out' ? (trim($validated['work_summary'] ?? '') ?: null) : null,
             ]));
         });
@@ -87,7 +90,13 @@ class EmployeeAttendanceController extends Controller
             session()->put('attendance_scan_intents.' . $scanId . '.event_id', $attendance->id);
         }
         $this->notifyTelegram($telegram, $this->buildAttendanceCaption(
-            $request->user(), $type, $attendance->scanned_at, $attendance->ip_address, $point->name, $attendance->work_summary, $attendance
+            $request->user(),
+            $type,
+            $attendance->scanned_at,
+            $attendance->ip_address,
+            $point->name,
+            $attendance->work_summary,
+            $attendance
         ));
         return $this->showRecordedAttendance($attendance);
     }
@@ -120,8 +129,10 @@ class EmployeeAttendanceController extends Controller
             if ($day->check_in_time && $day->check_out_time) {
                 $in = \Illuminate\Support\Carbon::parse($day->attendance_date . ' ' . $day->check_in_time);
                 $out = \Illuminate\Support\Carbon::parse($day->attendance_date . ' ' . $day->check_out_time);
-                if ($out->lt($in) && $day->employee->shift?->end_time < $day->employee->shift?->start_time) $out->addDay();
-                if ($out->gte($in)) $day->span_minutes = (int) floor($in->diffInMinutes($out));
+                if ($out->lt($in) && $day->employee->shift?->end_time < $day->employee->shift?->start_time)
+                    $out->addDay();
+                if ($out->gte($in))
+                    $day->span_minutes = (int) floor($in->diffInMinutes($out));
             }
         });
         $stats = [
@@ -130,10 +141,12 @@ class EmployeeAttendanceController extends Controller
             'late_minutes' => $days->sum('late_minutes'),
             'span_minutes' => $days->sum('span_minutes'),
         ];
-        if ($status) $days = $days->where('status', $status)->values();
+        if ($status)
+            $days = $days->where('status', $status)->values();
         $page = max(1, (int) $request->query('page', 1));
         $records = new \Illuminate\Pagination\LengthAwarePaginator($days->forPage($page, 15)->values(), $days->count(), 15, $page, [
-            'path' => $request->url(), 'query' => $request->only(['month', 'status']),
+            'path' => $request->url(),
+            'query' => $request->only(['month', 'status']),
         ]);
         return view('employee.attendance.history', compact('records', 'month', 'status', 'stats'));
     }
@@ -182,7 +195,10 @@ class EmployeeAttendanceController extends Controller
             session(['attendance_scan_intents' => $intents]);
         }
         return view('employee.attendance.confirm', [
-            'attendancePoint' => $point, 'token' => $token, 'nextAction' => $intent['type'], 'scanId' => $scanId,
+            'attendancePoint' => $point,
+            'token' => $token,
+            'nextAction' => $intent['type'],
+            'scanId' => $scanId,
         ]);
     }
 
@@ -256,11 +272,11 @@ class EmployeeAttendanceController extends Controller
             $details[] = '📍 ទីតាំង៖ ' . e($location);
         }
 
-        if ($event && $event->latitude !== null && $event->longitude !== null) {
-            $details[] = 'ចម្ងាយពីទីតាំងការងារ៖ ' . number_format($event->distance_meters, 1) . ' ម៉ែត្រ';
-            $details[] = 'ភាពត្រឹមត្រូវ GPS៖ ±' . number_format($event->location_accuracy, 1) . ' ម៉ែត្រ';
-            $details[] = '<a href="https://www.google.com/maps?q=' . $event->latitude . ',' . $event->longitude . '">មើលទីតាំងបុគ្គលិកលើផែនទី</a>';
-        }
+        // if ($event && $event->latitude !== null && $event->longitude !== null) {
+        //     // $details[] = 'ចម្ងាយពីទីតាំងការងារ៖ ' . number_format($event->distance_meters, 1) . ' ម៉ែត្រ';
+        //     // $details[] = 'ភាពត្រឹមត្រូវ GPS៖ ±' . number_format($event->location_accuracy, 1) . ' ម៉ែត្រ';
+        //     $details[] = '<a href="https://www.google.com/maps?q=' . $event->latitude . ',' . $event->longitude . '">មើលទីតាំងបុគ្គលិកលើផែនទី</a>';
+        // }
 
         // <blockquote> is the only HTML tag Telegram's Bot API renders with
         // a colored accent bar - the closest thing to "color" available in

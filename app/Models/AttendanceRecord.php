@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceRecord extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = [
         'employee_id',
         'attendance_point_id',
@@ -15,6 +17,7 @@ class AttendanceRecord extends Model
         'status',
         'late_minutes',
         'note',
+        'deleted_at',
     ];
 
     public function employee(): BelongsTo

@@ -53,7 +53,7 @@ class AttendanceSummaryService
         $checkInAt = $checkInTime ? Carbon::parse($date . ' ' . $checkInTime) : null;
         [$status, $lateMinutes] = $this->resolveStatus($employee, $checkInAt);
 
-        return AttendanceRecord::updateOrCreate(
+        return AttendanceRecord::withTrashed()->updateOrCreate(
             ['employee_id' => $employee->id, 'attendance_date' => $date],
             [
                 'attendance_point_id' => $attendancePointId,
@@ -62,6 +62,7 @@ class AttendanceSummaryService
                 'status' => $status,
                 'late_minutes' => $lateMinutes,
                 'note' => $note,
+                'deleted_at' => null,
             ]
         );
     }

@@ -116,7 +116,7 @@ class AttendancePointController extends Controller
 
     public function destroy(AttendancePoint $attendancePoint)
     {
-        if ($attendancePoint->attendanceRecords()->exists() || \App\Models\Attendance::where('attendance_point_id', $attendancePoint->id)->exists()) {
+        if ($attendancePoint->attendanceRecords()->withTrashed()->exists() || \App\Models\Attendance::withTrashed()->where('attendance_point_id', $attendancePoint->id)->exists()) {
             return back()->withErrors(['checkpoint' => 'This checkpoint has attendance history. Set it inactive instead of deleting it.']);
         }
         $attendancePoint->delete();

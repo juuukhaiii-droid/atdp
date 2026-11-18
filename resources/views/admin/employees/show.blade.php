@@ -13,6 +13,7 @@
         </div>
 
         <div class="flex gap-2">
+            <button type="button" class="attendance-add-btn" @click="open({ date: '{{ $today }}' })">+ បន្ថែមវត្តមាន</button>
             <a href="{{ route('admin.employees.edit', $employee) }}" class="inline-flex items-center rounded-[10px] bg-amber-400 text-ink font-semibold px-4 py-2.5 hover:bg-amber-500 transition">
                 Edit Employee
             </a>
@@ -279,6 +280,12 @@
                                         @click="open({{ \Illuminate\Support\Js::from($rowPayload) }})">
                                         <i class="fas fa-pen text-xs"></i>
                                     </button>
+                                    <form class="attendance-delete-form" method="POST" action="{{ route('admin.employees.attendance.destroy', $employee) }}" onsubmit="return confirm('Delete attendance for {{ $record->attendance_date }}?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="date" value="{{ $record->attendance_date }}">
+                                        <button type="submit" aria-label="Delete attendance for {{ $record->attendance_date }}">លុប</button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>
@@ -301,16 +308,19 @@
         <form method="POST" action="{{ route('admin.employees.attendance.update', $employee) }}"
             class="relative bg-white rounded-brand-lg shadow-card-lg w-full max-w-md overflow-hidden" @click.outside="modalOpen = false">
             @csrf
-            <input type="hidden" name="date" :value="form.date">
 
             <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-                <h5 class="font-bold">Edit Attendance &mdash; <span x-text="form.date"></span></h5>
+                <h5 class="font-bold">បន្ថែម / កែវត្តមាន</h5>
                 <button type="button" class="text-ink-soft hover:text-ink" @click="modalOpen = false" aria-label="Close">
                     <i class="fas fa-xmark"></i>
                 </button>
             </div>
 
             <div class="p-5 grid grid-cols-2 gap-3">
+                <div class="col-span-2">
+                    <label class="block font-semibold text-sm mb-1.5" for="attendance-edit-date">Date</label>
+                    <input id="attendance-edit-date" type="date" name="date" x-model="form.date" max="{{ $today }}" required class="w-full border border-slate-200 rounded-[10px] px-3 py-2 text-sm">
+                </div>
                 <div>
                     <label class="block font-semibold text-sm mb-1.5">Check In</label>
                     <input type="time" name="check_in_time" x-model="form.checkIn"
@@ -325,6 +335,7 @@
                     <label class="block font-semibold text-sm mb-1.5">Attendance Point</label>
                     <select name="attendance_point_id" x-model="form.pointId" required
                         class="w-full border border-slate-200 rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
+                        <option value="">Choose checkpoint</option>
                         @foreach ($attendancePoints as $point)
                             <option value="{{ $point->id }}">{{ $point->name }}</option>
                         @endforeach
@@ -348,6 +359,9 @@
 
 @push('styles')
 <style>
+    .attendance-add-btn{background:#b84129;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer}
+    .attendance-delete-form{display:inline-block;margin-left:8px}
+    .attendance-delete-form button{border:1px solid #fecaca;border-radius:8px;background:#fff1f2;color:#b91c1c;padding:7px 10px;font-size:12px;cursor:pointer}
     .attendance-calendar-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));

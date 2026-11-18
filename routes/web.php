@@ -48,6 +48,8 @@ Route::middleware(['auth', 'role:admin'])
         // Manual attendance correction for one employee's day
         Route::post('/employees/{employee}/attendance', [App\Http\Controllers\Admin\EmployeeController::class, 'updateAttendance'])
             ->name('employees.attendance.update');
+        Route::delete('/employees/{employee}/attendance', [App\Http\Controllers\Admin\EmployeeController::class, 'destroyAttendance'])
+            ->name('employees.attendance.destroy');
 
         // Departments
         Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class)->except('show');
