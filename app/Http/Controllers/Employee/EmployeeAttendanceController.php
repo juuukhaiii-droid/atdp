@@ -249,10 +249,10 @@ class EmployeeAttendanceController extends Controller
         $label = $type === 'in' ? 'ចូលធ្វើការ' : 'ចេញពីធ្វើការ';
         $emoji = $type === 'in' ? '🟢' : '🔴';
 
-        $details = ['👤 ឈ្មោះ៖ ' . e($employee?->full_name ?? $user->name)];
+        $details = ['👤  ឈ្មោះ៖ ' . e($employee?->full_name ?? $user->name)];
 
         if ($employee) {
-            $details[] = '🪪 លេខកូដបុគ្គលិក៖ ' . e($employee->employee_code);
+            $details[] = '🪪  លេខកូដបុគ្គលិក៖ ' . e($employee->employee_code);
         }
 
         if ($employee) {
@@ -262,14 +262,14 @@ class EmployeeAttendanceController extends Controller
             ])));
 
             if ($role !== '') {
-                $details[] = '🏢 ផ្នែក / តួនាទី៖ ' . e($role);
+                $details[] = '🏢  ផ្នែក / តួនាទី៖ ' . e($role);
             }
         }
 
-        $details[] = '🕒 ថ្ងៃទី / ម៉ោង៖ ' . $scannedAt->format('d/m/Y H:i');
+        $details[] = '🕒  ថ្ងៃទី / ម៉ោង៖ ' . $scannedAt->format('d/m/Y H:i');
 
         if ($location) {
-            $details[] = '📍 ទីតាំង៖ ' . e($location);
+            $details[] = '📍  ទីតាំង៖ ' . e($location);
         }
 
         // if ($event && $event->latitude !== null && $event->longitude !== null) {
@@ -291,7 +291,7 @@ class EmployeeAttendanceController extends Controller
 
         if ($workSummary) {
             $lines[] = '';
-            $lines[] = '📝 <b>សង្ខេបការងារ</b>';
+            $lines[] = '📝  <b>សង្ខេបការងារ</b>';
             // Telegram's HTML mode doesn't support <br> - a plain newline in
             // the text itself is what it renders as a line break.
             $lines[] = '<blockquote>' . e($workSummary) . '</blockquote>';
