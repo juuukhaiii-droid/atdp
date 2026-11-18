@@ -1,5 +1,5 @@
 @extends('layouts.employee-app')
-@section('title', 'Attendance saved')
+@section('title', 'បានកត់ត្រាវត្តមាន')
 @section('content')
 @php
     $checkedIn = $result['type'] === 'in';
@@ -10,7 +10,7 @@
     <h1 id="attendance-success-title">{{ $checkedIn ? 'ចូលធ្វើការជោគជ័យ' : 'ចេញពីធ្វើការជោគជ័យ' }}</h1>
     <p class="receipt-confirmation" role="status">វត្តមានរបស់អ្នកបានកត់ត្រារួចរាល់</p>
     <div class="receipt-card">
-        <span class="receipt-type {{ $checkedIn ? '' : 'is-out' }}">{{ $checkedIn ? 'CHECK IN' : 'CHECK OUT' }}</span>
+        <span class="receipt-type {{ $checkedIn ? '' : 'is-out' }}">{{ $checkedIn ? 'ចូលធ្វើការ' : 'ចេញពីធ្វើការ' }}</span>
         <time class="receipt-time" datetime="{{ $savedAt->toIso8601String() }}">{{ $savedAt->format('H:i') }}<span>:{{ $savedAt->format('s') }}</span></time>
         <p class="receipt-date">{{ $savedAt->format('d / m / Y') }}</p>
         <dl class="receipt-details">

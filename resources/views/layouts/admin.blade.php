@@ -31,7 +31,7 @@
 <body class="phf-dashboard phf-admin font-body">
     <a href="#admin-content" class="admin-skip">Skip to content</a>
     <aside id="admin-sidebar" class="admin-sidebar" aria-label="Administration sidebar">
-        <a class="admin-brand" href="{{ route('admin.dashboard') }}"><span class="admin-brand-mark"><img src="{{ asset('images/pizzahappyfamily-logo.jpg') }}" alt="PizzaHappyFamily logo" width="44" height="44"></span><span><strong>PizzaHappyFamily<span>.</span></strong><small>TEAM & ATTENDANCE</small></span></a>
+        <a class="admin-brand" href="{{ route('admin.dashboard') }}"><span class="admin-brand-mark"><img src="{{ asset('images/pizzahappyfamily-logo.jpg') }}" alt="PizzaHappyFamily logo" width="44" height="44"></span><span><strong>PizzaHappyFamily<span>.</span></strong><small> ATTENDANCE</small></span></a>
         <nav class="admin-menu" aria-label="Admin navigation">
             @foreach(collect($navigation)->groupBy('group') as $group => $items)
                 <div class="admin-menu-label">{{ $group }}</div>
@@ -63,7 +63,7 @@
             @endforeach
             @yield('content')
         </main>
-        <footer class="admin-footer"><span>© {{ now()->year }} <strong>PizzaHappyFamily</strong><span class="footer-divider">·</span>Attendance Management</span><span>Happy team, happy family.</span></footer>
+        <footer class="admin-footer"><span>© {{ now()->year }} <strong>PizzaHappyFamily</strong><span class="footer-divider">·</span>Attendance Management</span><span>@SENSOTHI_Developer.</span></footer>
     </div>
     <script src="{{ asset('js/admin.js') }}?v={{ filemtime(public_path('js/admin.js')) }}" defer></script>
     @stack('scripts')

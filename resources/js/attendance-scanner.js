@@ -36,13 +36,13 @@ export function createScanner(root, browser = window, decode = jsQR) {
         stop.hidden = true;
         start.disabled = blocked;
         start.hidden = false;
-        start.textContent = 'Open camera';
+        start.textContent = 'បើកកាមេរ៉ា';
     };
     const follow = (code) => {
         if (!code?.data) return false;
         const url = attendanceUrl(code.data, browser.location.origin);
-        if (!url) { message('This is not a shop attendance QR. Please scan the correct code.', true); return false; }
-        release(); message('QR found. Checking your location...');
+        if (!url) { message('QR នេះមិនមែនជារបស់ហាងទេ។ សូមស្កេន QR របស់ហាង។', true); return false; }
+        release(); message('ស្កេនបានហើយ។ កំពុងពិនិត្យទីតាំង…');
         browser.location.assign(url);
         return true;
     };
@@ -61,13 +61,13 @@ export function createScanner(root, browser = window, decode = jsQR) {
     };
     const startCamera = async () => {
         release();
-        if (!browser.isSecureContext) { message('Camera and GPS are blocked on this HTTP address. Open the secure HTTPS attendance website in Safari or Chrome. A private IP over HTTP cannot enable these permissions.', true); return; }
-        if (!browser.navigator.mediaDevices?.getUserMedia) { message('This browser cannot open the camera. Open this link in Safari or Chrome.', true); return; }
+        if (!browser.isSecureContext) { message('កាមេរ៉ា និង GPS ត្រូវការតំណ HTTPS។ សូមបើកតំណសុវត្ថិភាពក្នុង Safari ឬ Chrome។', true); return; }
+        if (!browser.navigator.mediaDevices?.getUserMedia) { message('កម្មវិធីនេះមិនអាចបើកកាមេរ៉ាបានទេ។ សូមបើកតំណក្នុង Safari ឬ Chrome។', true); return; }
         const current = ++attempt;
         start.disabled = true;
         start.hidden = true;
         stop.hidden = false;
-        message('Allow camera access when asked…');
+        message('សូមចុចអនុញ្ញាតឱ្យប្រើកាមេរ៉ា។');
         try {
             const camera = await browser.navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
             if (current !== attempt) { camera.getTracks().forEach((track) => track.stop()); return; }
@@ -75,25 +75,25 @@ export function createScanner(root, browser = window, decode = jsQR) {
             await video.play();
             if (current !== attempt) return;
             start.disabled = false; start.hidden = true;
-            message('Place the QR inside the frame.');
+            message('ដាក់ QR របស់ហាងក្នុងស៊ុមកាមេរ៉ា។');
             frame = browser.requestAnimationFrame(tick);
         } catch (error) {
             if (current !== attempt) return;
             release();
             const errors = {
-                NotAllowedError: 'Camera permission denied. Allow camera access in browser settings, then try again. If this is Telegram, open the page in Safari or Chrome.',
-                NotFoundError: 'No camera was found. Open this page on a phone with a camera.',
-                NotReadableError: 'The camera is busy. Close other camera apps and try again.',
-                SecurityError: 'Camera access is blocked. Open the secure HTTPS link in Safari or Chrome.',
+                NotAllowedError: 'កាមេរ៉ាត្រូវបានបិទ។ សូមអនុញ្ញាតក្នុងការកំណត់កម្មវិធី រួចព្យាយាមម្តងទៀត។ បើប្រើ Telegram សូមបើកក្នុង Safari ឬ Chrome។',
+                NotFoundError: 'រកមិនឃើញកាមេរ៉ា។ សូមបើកទំព័រនេះលើទូរស័ព្ទដែលមានកាមេរ៉ា។',
+                NotReadableError: 'កាមេរ៉ាកំពុងប្រើដោយកម្មវិធីផ្សេង។ សូមបិទកម្មវិធីនោះ រួចសាកម្តងទៀត។',
+                SecurityError: 'កាមេរ៉ាត្រូវបានរារាំង។ សូមបើកតំណ HTTPS ក្នុង Safari ឬ Chrome។',
             };
-            message(errors[error.name] || 'The camera could not start. Check camera permissions and try again.', true);
+            message(errors[error.name] || 'មិនអាចបើកកាមេរ៉ាបាន។ សូមពិនិត្យការអនុញ្ញាត រួចសាកម្តងទៀត។', true);
         }
     };
     start.addEventListener('click', startCamera);
-    stop.addEventListener('click', () => { release(); message('Camera stopped. You can start it again.'); });
+    stop.addEventListener('click', () => { release(); message('បានបិទកាមេរ៉ា។ អ្នកអាចបើកម្តងទៀតបាន។'); });
     root.querySelector('[data-copy-link]').addEventListener('click', async () => {
-        try { await browser.navigator.clipboard.writeText(browser.location.href); message('Link copied. Paste it into Safari or Chrome.'); }
-        catch { message('Copy the page address from your browser menu and open it in Safari or Chrome.'); }
+        try { await browser.navigator.clipboard.writeText(browser.location.href); message('បានចម្លងតំណ។ សូមបើកតំណនេះក្នុង Safari ឬ Chrome។'); }
+        catch { message('សូមចម្លងតំណពីម៉ឺនុយកម្មវិធី ហើយបើកក្នុង Safari ឬ Chrome។'); }
     });
     root.querySelector('[data-browser-notice]').hidden = blocked || !/Telegram|FBAN|FBAV|Instagram|Line\//i.test(browser.navigator.userAgent);
     if (blocked) {
@@ -101,7 +101,7 @@ export function createScanner(root, browser = window, decode = jsQR) {
         const help = root.querySelector('[data-device-help]');
         const actions = root.querySelector('[data-scanner-actions]');
         if (help) { help.hidden = false; status.hidden = true; }
-        else message('Camera and GPS require HTTPS. Ask your manager for the secure attendance link.', true);
+        else message('កាមេរ៉ា និង GPS ត្រូវការតំណ HTTPS។ សូមស្នើសុំតំណពីអ្នកគ្រប់គ្រង។', true);
         if (actions) actions.hidden = true;
         start.disabled = true;
     } else {

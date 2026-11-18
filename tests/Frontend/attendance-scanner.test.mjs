@@ -60,7 +60,7 @@ test('automatic camera denial exposes a manual retry and HTTP never auto starts'
 });
 test('permission denial permits retry and hides camera panel', async () => {
     const f = fixture({ error: 'NotAllowedError' }); await f.scanner.startCamera();
-    assert.match(f.nodes['scanner-status'].textContent, /permission denied/);
+    assert.match(f.nodes['scanner-status'].textContent, /កាមេរ៉ាត្រូវបានបិទ/);
     assert.equal(f.nodes['camera-start'].disabled, false);
     assert.equal(f.nodes['camera-panel'].hidden, true);
 });
@@ -74,7 +74,7 @@ test('unrelated QR never navigates to an external page', async () => {
     const f = fixture({ decoder: () => ({ data: 'https://evil.test/phishing' }) });
     await f.scanner.startCamera(); f.frame();
     assert.equal(f.state().navigated, undefined);
-    assert.match(f.nodes['scanner-status'].textContent, /not a shop attendance QR/);
+    assert.match(f.nodes['scanner-status'].textContent, /មិនមែនជារបស់ហាង/);
     f.scanner.release(); assert.equal(f.state().stopped, 1);
 });
 

@@ -1,6 +1,6 @@
 @extends('layouts.employee-app')
 
-@section('title', 'Dashboard')
+@section('title', 'ទំព័រដើម')
 
 @section('content')
 
@@ -8,9 +8,9 @@
         $durationLabel = null;
         if ($todayIn && $todayOut) {
             $minutes = max(0, (int) floor($todayIn->scanned_at->diffInMinutes($todayOut->scanned_at)));
-            $durationLabel = sprintf('%dh %02dm worked today', intdiv($minutes, 60), $minutes % 60);
+            $durationLabel = sprintf('រយៈពេលចូល–ចេញ %d ម៉ោង %02d នាទី', intdiv($minutes, 60), $minutes % 60);
         } elseif ($todayIn) {
-            $durationLabel = 'Checked in ' . $todayIn->scanned_at->diffForHumans();
+            $durationLabel = 'បានចូលនៅម៉ោង ' . $todayIn->scanned_at->format('H:i');
         }
 
         $daysElapsed = min(now()->day, now()->daysInMonth);
@@ -18,7 +18,7 @@
     @endphp
 
     {{-- Employee Summary --}}
-    <div class="section-title" style="margin-top:0;">Employee</div>
+    <div class="section-title" style="margin-top:0;">បុគ្គលិក</div>
     <a href="{{ route('employee.profile') }}" class="app-card employee-summary mb-3">
         <div class="card-body d-flex align-items-center gap-3">
             @if ($employee->photo)
@@ -29,7 +29,7 @@
 
             <div class="flex-grow-1 min-w-0">
                 <div class="dash-emp-name">{{ $employee->full_name }}</div>
-                <div class="dash-emp-sub">{{ $employee->position ?? 'N/A' }} &middot; {{ $employee->department->name ?? 'N/A' }}</div>
+                <div class="dash-emp-sub">{{ $employee->position ?? 'មិនទាន់កំណត់' }} &middot; {{ $employee->department->name ?? 'មិនទាន់កំណត់' }}</div>
             </div>
 
             <i class="fas fa-chevron-right dash-emp-chevron"></i>
@@ -40,52 +40,52 @@
     <div class="app-card status-hero mb-3">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-1">
-                <span class="section-eyebrow">Today's Status</span>
+                <span class="section-eyebrow">វត្តមានថ្ងៃនេះ</span>
                 @if ($todayIn && !$todayOut)
-                    <span class="status-pill status-pill-in"><i class="fas fa-circle-dot me-1"></i>Checked In</span>
+                    <span class="status-pill status-pill-in"><i class="fas fa-circle-dot me-1"></i>បានចូល</span>
                 @elseif ($todayIn && $todayOut)
-                    <span class="status-pill status-pill-done"><i class="fas fa-check me-1"></i>Complete</span>
+                    <span class="status-pill status-pill-done"><i class="fas fa-check me-1"></i>បានចេញ</span>
                 @else
-                    <span class="status-pill status-pill-idle"><i class="fas fa-moon me-1"></i>Not Checked In</span>
+                    <span class="status-pill status-pill-idle"><i class="fas fa-moon me-1"></i>មិនទាន់ចូល</span>
                 @endif
-            </div>  
+            </div>
 
             @if ($durationLabel)
                 <div class="status-duration">{{ $durationLabel }}</div>
             @else
-                <div class="status-duration status-duration-muted">You haven't checked in yet today</div>
+                <div class="status-duration status-duration-muted">អ្នកមិនទាន់បានចូលធ្វើការថ្ងៃនេះទេ</div>
             @endif
 
             <div class="row g-2 mt-2">
                 <div class="col-6">
                     <div class="hero-time-box">
-                        <div class="hero-time-label"><i class="fas fa-arrow-right-to-bracket text-success me-1"></i>Check In</div>
-                        <div class="hero-time-value">{{ $todayIn ? $todayIn->scanned_at->format('h:i A') : '--:--' }}</div>
+                        <div class="hero-time-label"><i class="fas fa-arrow-right-to-bracket text-success me-1"></i>ម៉ោងចូល</div>
+                        <div class="hero-time-value">{{ $todayIn ? $todayIn->scanned_at->format('H:i') : '--:--' }}</div>
                     </div>
                 </div>
                 <div class="col-6">
                     <div class="hero-time-box">
-                        <div class="hero-time-label"><i class="fas fa-arrow-right-from-bracket text-warning me-1"></i>Check Out</div>
-                        <div class="hero-time-value">{{ $todayOut ? $todayOut->scanned_at->format('h:i A') : '--:--' }}</div>
+                        <div class="hero-time-label"><i class="fas fa-arrow-right-from-bracket text-warning me-1"></i>ម៉ោងចេញ</div>
+                        <div class="hero-time-value">{{ $todayOut ? $todayOut->scanned_at->format('H:i') : '--:--' }}</div>
                     </div>
                 </div>
             </div>
 
             <a href="{{ route('attendance.show.qr') }}" class="btn btn-scan-cta w-100 mt-3">
-                <i class="fas fa-qrcode me-2"></i>Scan QR to {{ $todayIn && !$todayOut ? 'Check Out' : 'Check In' }}
+                <i class="fas fa-qrcode me-2"></i>{{ $todayIn && !$todayOut ? 'ស្កេន QR ដើម្បីចេញ' : 'ស្កេន QR ដើម្បីចូល' }}
             </a>
         </div>
     </div>
 
     {{-- Monthly Stats --}}
-    <div class="section-title" style="margin-top:0;">This Month</div>
+    <div class="section-title" style="margin-top:0;">ខែនេះ</div>
     <div class="row g-2">
         <div class="col-4">
             <div class="app-card stat-tile">
                 <div class="card-body text-center">
                     <div class="stat-icon stat-icon-green"><i class="fas fa-calendar-check"></i></div>
                     <div class="stat-tile-value">{{ $presentDays }}</div>
-                    <div class="stat-tile-label">Present</div>
+                    <div class="stat-tile-label">មានវត្តមាន</div>
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@
                 <div class="card-body text-center">
                     <div class="stat-icon stat-icon-amber"><i class="fas fa-clock"></i></div>
                     <div class="stat-tile-value">{{ $lateDays }}</div>
-                    <div class="stat-tile-label">Late</div>
+                    <div class="stat-tile-label">មកយឺត</div>
                 </div>
             </div>
         </div>
@@ -103,7 +103,7 @@
                 <div class="card-body text-center">
                     <div class="stat-icon stat-icon-blue"><i class="fas fa-chart-line"></i></div>
                     <div class="stat-tile-value">{{ $monthlyDays }}</div>
-                    <div class="stat-tile-label">Days Recorded</div>
+                    <div class="stat-tile-label">ថ្ងៃកត់ត្រា</div>
                 </div>
             </div>
         </div>
@@ -112,7 +112,7 @@
     <div class="app-card rate-card mt-2 mb-3">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-2">
-                <span class="rate-label">Attendance Rate</span>
+                <span class="rate-label">អត្រាវត្តមាន</span>
                 <span class="rate-value">{{ $attendanceRate }}%</span>
             </div>
             <div class="rate-track">
@@ -122,13 +122,13 @@
     </div>
 
     {{-- Recent Activity --}}
-    <div class="section-title">Recent Activity</div>
+    <div class="section-title">វត្តមានថ្មីៗ</div>
     <div class="app-card">
         <div class="card-body p-0">
             @forelse ($recentActivity as $record)
                 @include('employee.attendance.day')
             @empty
-                <div class="text-center text-muted py-4 small">No attendance records yet.</div>
+                <div class="text-center text-muted py-4 small">មិនទាន់មានកំណត់ត្រាវត្តមានទេ។</div>
             @endforelse
         </div>
     </div>

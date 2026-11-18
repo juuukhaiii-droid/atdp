@@ -12,18 +12,18 @@ class AttendanceLocationVerifier
     {
         if ($point->status !== 'active' || $point->latitude === null || $point->longitude === null) {
             throw ValidationException::withMessages([
-                'location' => 'This checkpoint has no active GPS location. Please ask your administrator to configure it.',
+                'location' => 'ទីតាំងនេះមិនទាន់មាន GPS ដែលអាចប្រើបាន។ សូមទាក់ទងអ្នកគ្រប់គ្រង។',
             ]);
         }
 
         $capturedAt = Carbon::parse($coordinates['location_captured_at']);
         if ($capturedAt->lt(now()->subMinutes(2)) || $capturedAt->gt(now()->addSeconds(30))) {
-            throw ValidationException::withMessages(['location' => 'Your location has expired. Please capture a fresh GPS location.']);
+            throw ValidationException::withMessages(['location' => 'ទីតាំងនេះហួសពេលហើយ។ សូមយកទីតាំង GPS ថ្មីម្តងទៀត។']);
         }
 
         $accuracy = (float) $coordinates['location_accuracy'];
         if ($accuracy > min(100, $point->radius_meters)) {
-            throw ValidationException::withMessages(['location' => 'GPS accuracy is too low. Move near a window or outside and try again.']);
+            throw ValidationException::withMessages(['location' => 'ទីតាំង GPS មិនទាន់ច្បាស់។ សូមទៅជិតបង្អួច ឬខាងក្រៅ រួចសាកម្តងទៀត។']);
         }
 
         $distance = $this->distance(
@@ -33,7 +33,7 @@ class AttendanceLocationVerifier
         // Do not expand the permitted area using the device-reported accuracy.
         if ($distance > $point->radius_meters) {
             throw ValidationException::withMessages([
-                'location' => sprintf('You are %s m from this checkpoint. Attendance is allowed within %s m.', number_format($distance), $point->radius_meters),
+                'location' => sprintf('អ្នកនៅចម្ងាយ %s ម៉ែត្រពីទីតាំងការងារ។ ត្រូវនៅក្នុងចម្ងាយ %s ម៉ែត្រ ដើម្បីកត់ត្រាវត្តមាន។', number_format($distance), $point->radius_meters),
             ]);
         }
 

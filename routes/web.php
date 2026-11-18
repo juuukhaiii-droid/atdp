@@ -103,6 +103,8 @@ Route::middleware(['auth', 'role:employee'])
 
         Route::get('/profile', [EmployeeProfileController::class, 'index'])
             ->name('profile');
+        Route::patch('/profile', [EmployeeProfileController::class, 'update'])
+            ->name('profile.update');
     });
 
 Route::get('/attendance/{token}', [EmployeeAttendanceController::class, 'login'])

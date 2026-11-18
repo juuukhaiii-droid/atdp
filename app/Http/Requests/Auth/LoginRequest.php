@@ -16,6 +16,7 @@ class LoginRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        app()->setLocale('km');
         if ($this->has('identifier') && is_string($this->input('identifier'))) {
             $identifier = trim($this->input('identifier'));
             $emailLogin = str_contains($identifier, '@');
@@ -81,8 +82,8 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'identifier.email' => 'Enter your full admin email address, or use your employee full name and PIN.',
-            'password.digits' => 'Use your employee name with a 4-digit PIN, or enter your full admin email and password.',
+            'identifier.email' => 'អ្នកគ្រប់គ្រងប្រើអ៊ីមែលពេញ និងពាក្យសម្ងាត់។ បុគ្គលិកប្រើឈ្មោះពេញ និង PIN។',
+            'password.digits' => 'បុគ្គលិកប្រើឈ្មោះពេញ និង PIN ៤ ខ្ទង់។ អ្នកគ្រប់គ្រងប្រើអ៊ីមែល និងពាក្យសម្ងាត់។',
         ];
     }
 

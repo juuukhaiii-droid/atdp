@@ -49,11 +49,11 @@ test('one tap captures fresh coordinates and double taps do not submit twice', (
     f.position(); assert.equal(f.state().submissions, 1);
     assert.equal(f.values.latitude.value, 11.594184);
     assert.ok(f.values.location_captured_at.value);
-    assert.equal(f.nodes['[data-location-submit]'].textContent, 'Saving attendance...');
+    assert.equal(f.nodes['[data-location-submit]'].textContent, 'កំពុងរក្សាទុកវត្តមាន…');
 });
 test('permission denial allows an explicit retry', () => {
     const f = fixture(); f.submit(); f.fail(1);
-    assert.match(f.nodes['[data-location-status]'].textContent, /Location is blocked/);
+    assert.match(f.nodes['[data-location-status]'].textContent, /ទីតាំងត្រូវបានបិទ/);
     assert.equal(f.nodes['[data-location-submit]'].disabled, false);
     f.submit(); f.position(); assert.equal(f.state().submissions, 1);
 });

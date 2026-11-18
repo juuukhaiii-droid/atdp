@@ -83,14 +83,14 @@ class AttendanceLocationTest extends TestCase
         );
         $this->actingAs($this->employeeUser)->get(route('employee.dashboard'))
             ->assertOk()->assertSee('Corrected attendance')->assertSee('08:00')->assertSee('17:00')
-            ->assertDontSee('No attendance records yet.');
+            ->assertDontSee('មិនទាន់មានកំណត់ត្រាវត្តមានទេ។');
         $this->get(route('employee.attendance.history'))
             ->assertOk()->assertSee('Corrected attendance')->assertSee('08:00')->assertSee('17:00')
-            ->assertDontSee('No attendance records yet.');
+            ->assertDontSee('មិនទាន់មានកំណត់ត្រាវត្តមានទេ។');
         $other = User::factory()->create(['role' => 'employee']);
         Employee::create(['employee_code' => 'OTHER-01', 'full_name' => 'Other Employee', 'pin' => Hash::make('2468'), 'user_id' => $other->id, 'status' => 'active', 'department_id' => $this->employeeUser->employee->department_id, 'shift_id' => $this->employeeUser->employee->shift_id]);
         $this->actingAs($other)->get(route('employee.attendance.history'))
-            ->assertOk()->assertDontSee('Corrected attendance')->assertSee('No attendance records yet.');
+            ->assertOk()->assertDontSee('Corrected attendance')->assertSee('មិនទាន់មានកំណត់ត្រាវត្តមានទេ។');
     }
 
     public function test_employee_history_pairs_overnight_scans_on_one_workday(): void
@@ -157,6 +157,51 @@ class AttendanceLocationTest extends TestCase
         $this->get(route('attendance.show', $this->point->qr_token))->assertOk()
             ->assertSee('name="work_summary"', false)
             ->assertSee('data-auto-start="false"', false);
+    }
+
+    public function test_employee_can_update_own_phone_and_photo_but_not_employment_fields(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $employee = $this->employeeUser->employee;
+        $photo = \Illuminate\Http\UploadedFile::fake()->image('photo.jpg');
+        $this->actingAs($this->employeeUser)->patch(route('employee.profile.update'), [
+            'phone' => '+855 12 345 678', 'photo' => $photo,
+            'role' => 'admin', 'status' => 'inactive', 'full_name' => 'Other name', 'user_id' => 999,
+        ])->assertRedirect(route('employee.profile'))->assertSessionHasNoErrors();
+        $updated = $employee->fresh();
+        $this->assertSame('+855 12 345 678', $updated->phone);
+        $this->assertSame($employee->full_name, $updated->full_name);
+        $this->assertSame('active', $updated->status);
+        $this->assertSame($this->employeeUser->id, $updated->user_id);
+        $this->assertSame('employee', $this->employeeUser->fresh()->role);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($updated->photo);
+        $old = $updated->photo;
+        $this->patch(route('employee.profile.update'), ['photo' => \Illuminate\Http\UploadedFile::fake()->image('new.png')])
+            ->assertSessionHasNoErrors();
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($old);
+        $this->assertSame('+855 12 345 678', $employee->fresh()->phone);
+    }
+
+    public function test_employee_email_update_is_unique_and_syncs_linked_account(): void
+    {
+        $this->employeeUser->forceFill(['email_verified_at' => now()])->save();
+        $this->actingAs($this->employeeUser)->patch(route('employee.profile.update'), ['email' => ' New.Staff@example.test '])
+            ->assertSessionHasNoErrors()->assertRedirect(route('employee.profile'));
+        $this->assertSame('new.staff@example.test', $this->employeeUser->fresh()->email);
+        $this->assertSame('new.staff@example.test', $this->employeeUser->employee->fresh()->email);
+        $this->assertNull($this->employeeUser->fresh()->email_verified_at);
+        $other = User::factory()->create(['email' => 'taken@example.test']);
+        $this->patch(route('employee.profile.update'), ['email' => $other->email])->assertSessionHasErrors('email');
+        $this->assertSame('new.staff@example.test', $this->employeeUser->fresh()->email);
+    }
+
+    public function test_employee_profile_rejects_invalid_uploads_and_admins_cannot_use_employee_update(): void
+    {
+        $this->actingAs($this->employeeUser)->patch(route('employee.profile.update'), [
+            'phone' => 'invalid', 'photo' => \Illuminate\Http\UploadedFile::fake()->create('script.php', 1, 'text/plain'),
+        ])->assertSessionHasErrors(['phone', 'photo']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->patch(route('employee.profile.update'), ['phone' => '012345678'])->assertForbidden();
     }
 
     public function test_check_out_requires_a_new_location_and_saves_work_summary(): void
@@ -449,14 +494,14 @@ class AttendanceLocationTest extends TestCase
     {
         $this->actingAs($this->employeeUser)->post(route('attendance.submit', $this->point->qr_token), $this->coordinates());
         $this->get(route('employee.attendance.success'))->assertOk()
-            ->assertSee('ចូលធ្វើការជោគជ័យ')->assertSee('Shop')->assertSee('Attendance saved')
+            ->assertSee('ចូលធ្វើការជោគជ័យ')->assertSee('Shop')->assertSee('បានកត់ត្រាវត្តមាន')
             ->assertDontSee('admin-sidebar');
     }
 
     public function test_single_checkpoint_is_selected_without_an_extra_selection_step(): void
     {
         $this->actingAs($this->employeeUser)->get(route('employee.attendance.checkin.form'))->assertOk()
-            ->assertSee('Your checkpoint')->assertSee('Shop')->assertDontSee('id="attendance-point"', false);
+            ->assertSee('ទីតាំងការងារ')->assertSee('Shop')->assertDontSee('id="attendance-point"', false);
     }
 
     public function test_unified_login_accepts_employee_name_and_pin_without_role_selection(): void
@@ -476,7 +521,7 @@ class AttendanceLocationTest extends TestCase
 
     public function test_unified_login_rejects_wrong_pin_and_has_no_role_tabs(): void
     {
-        $this->get(route('login'))->assertOk()->assertSee('Full name or email')->assertDontSee('login-mode-toggle');
+        $this->get(route('login'))->assertOk()->assertSee('ឈ្មោះពេញ ឬអ៊ីមែល')->assertDontSee('login-mode-toggle');
         $this->post(route('login'), ['identifier' => 'GPS Employee', 'password' => '0000'])
             ->assertSessionHasErrors();
         $this->assertGuest();

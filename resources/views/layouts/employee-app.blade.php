@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 
 <head>
     <x-app-icons />
@@ -20,6 +20,8 @@
     @stack('styles')
 
     <style>
+        html[lang=km] .section-title, html[lang=km] .section-eyebrow { letter-spacing: 0; line-height: 1.9; text-transform: none; }
+        html[lang=km] .tab-item span, html[lang=km] .tab-scan-label { font-size: 11px; line-height: 1.8; }
         :root {
             --brand-dark: #111827;
             --brand-primary: #dc2626;
@@ -238,25 +240,25 @@
         <a href="{{ route('employee.dashboard') }}"
             class="tab-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
             <i class="fas fa-house"></i>
-            <span>Home</span>
+            <span>ទំព័រដើម</span>
         </a>
         <a href="{{ route('employee.attendance.history') }}"
             class="tab-item {{ request()->routeIs('employee.attendance.history') ? 'active' : '' }}">
             <i class="fas fa-clock-rotate-left"></i>
-            <span>History</span>
+            <span>ប្រវត្តិ</span>
         </a>
 
         <div class="tab-scan-wrap">
-            <a href="{{ route('attendance.show.qr') }}" class="tab-scan-btn" title="Scan QR">
+            <a href="{{ route('attendance.show.qr') }}" class="tab-scan-btn" title="ស្កេន QR">
                 <i class="fas fa-qrcode"></i>
             </a>
-            <span class="tab-scan-label">Scan</span>
+            <span class="tab-scan-label">ស្កេន</span>
         </div>
 
         <a href="{{ route('employee.profile') }}"
             class="tab-item {{ request()->routeIs('employee.profile') ? 'active' : '' }}">
             <i class="fas fa-user"></i>
-            <span>Profile</span>
+            <span>គណនី</span>
         </a>
     </nav>
 

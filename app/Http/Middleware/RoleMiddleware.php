@@ -24,8 +24,9 @@ class RoleMiddleware
         }
 
         if ($role === 'employee' && $request->user()->employee?->status !== 'active') {
-            abort(403, 'An active employee account is required.');
+            abort(403, 'គណនីរបស់អ្នកត្រូវបានផ្អាក។ សូមទាក់ទងអ្នកគ្រប់គ្រង។');
         }
+        if ($role === 'employee') app()->setLocale('km');
 
         return $next($request);
     }

@@ -19,7 +19,8 @@ class EmployeeAttendanceController extends Controller
 {
     private function requireActiveEmployee(Request $request): void
     {
-        abort_unless($request->user()?->role === 'employee' && $request->user()->employee?->status === 'active', 403, 'An active employee account is required.');
+        app()->setLocale('km');
+        abort_unless($request->user()?->role === 'employee' && $request->user()->employee?->status === 'active', 403, 'គណនីបុគ្គលិកមិនអាចប្រើបាន។ សូមទាក់ទងអ្នកគ្រប់គ្រង។');
     }
 
     private function nextType(): string
@@ -75,7 +76,7 @@ class EmployeeAttendanceController extends Controller
             // Serialize submissions for the same employee, including rapid double taps.
             User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
             if ($this->nextType() !== $type) {
-                throw ValidationException::withMessages(['attendance' => 'Attendance has already changed. Refresh this page before trying again.']);
+                throw ValidationException::withMessages(['attendance' => 'វត្តមានបានផ្លាស់ប្តូររួចហើយ។ សូមបើកទំព័រឡើងវិញ មុនសាកម្តងទៀត។']);
             }
             return Attendance::create(array_merge($location, [
                 'user_id' => Auth::id(),
@@ -168,24 +169,24 @@ class EmployeeAttendanceController extends Controller
         $point = AttendancePoint::where('qr_token', $token)->where('status', 'active')->firstOrFail();
         if (!Auth::check()) {
             session(['attendance_intended_token' => $token]);
-            return redirect()->route('login')->withErrors(['login' => 'Please log in to record your attendance.']);
+            return redirect()->route('login')->withErrors(['login' => 'សូមចូលគណនី ដើម្បីកត់ត្រាវត្តមាន។']);
         }
         $this->requireActiveEmployee($request);
         if ($request->has('scan') && (!is_string($request->query('scan')) || !Str::isUuid($request->query('scan')))) {
-            return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'This scan is invalid. Please scan the QR again.']);
+            return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'ការស្កេននេះមិនត្រឹមត្រូវ។ សូមស្កេន QR ម្តងទៀត។']);
         }
         $intents = session('attendance_scan_intents', []);
         $scanId = $request->query('scan');
         if ($scanId) {
             $intent = $intents[$scanId] ?? null;
             if (!$intent || $intent['user_id'] !== Auth::id() || $intent['point_id'] !== $point->id) {
-                return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'This scan has expired. Please scan the QR again.']);
+                return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'ការស្កេននេះហួសពេលហើយ។ សូមស្កេន QR ម្តងទៀត។']);
             }
             if (!empty($intent['event_id'])) {
                 return $this->showRecordedAttendance(Attendance::where('user_id', Auth::id())->findOrFail($intent['event_id']));
             }
             if ($intent['expires_at'] < now()->timestamp) {
-                return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'This scan has expired. Please scan the QR again.']);
+                return redirect()->route('attendance.show.qr')->withErrors(['scan' => 'ការស្កេននេះហួសពេលហើយ។ សូមស្កេន QR ម្តងទៀត។']);
             }
         } else {
             $scanId = (string) Str::uuid();
@@ -211,13 +212,13 @@ class EmployeeAttendanceController extends Controller
         if ($scanId) {
             $intent = session('attendance_scan_intents.' . $scanId);
             if (!$intent || $intent['user_id'] !== Auth::id() || $intent['point_id'] !== $point->id || $intent['type'] !== $validated['attendance_type']) {
-                throw ValidationException::withMessages(['scan' => 'This scan is invalid. Please scan the QR again.']);
+                throw ValidationException::withMessages(['scan' => 'ការស្កេននេះមិនត្រឹមត្រូវ។ សូមស្កេន QR ម្តងទៀត។']);
             }
             if (!empty($intent['event_id'])) {
                 return $this->showRecordedAttendance(Attendance::where('user_id', Auth::id())->findOrFail($intent['event_id']));
             }
             if ($intent['expires_at'] < now()->timestamp) {
-                throw ValidationException::withMessages(['scan' => 'This scan has expired. Please scan the QR again.']);
+                throw ValidationException::withMessages(['scan' => 'ការស្កេននេះហួសពេលហើយ។ សូមស្កេន QR ម្តងទៀត។']);
             }
         }
         return $this->recordAttendance($request, $point, $verifier, $telegram, $validated['attendance_type'], $scanId);

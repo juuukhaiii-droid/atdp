@@ -1,0 +1,31 @@
+<?php
+
+return [
+    'required' => 'សូមបំពេញ :attribute។',
+    'string' => ':attribute ត្រូវតែជាអក្សរ។',
+    'numeric' => ':attribute ត្រូវតែជាលេខ។',
+    'integer' => ':attribute ត្រូវតែជាចំនួនគត់។',
+    'image' => ':attribute ត្រូវតែជារូបភាព។',
+    'uploaded' => 'មិនអាចផ្ទុក :attribute បាន។ សូមជ្រើសរូបតូចជាងនេះ ឬសាកម្តងទៀត។',
+    'mimes' => 'សូមជ្រើស :attribute ជាប្រភេទ :values។',
+    'regex' => 'ទម្រង់ :attribute មិនត្រឹមត្រូវ។',
+    'date' => ':attribute មិនត្រឹមត្រូវ។',
+    'date_format' => 'ទម្រង់ :attribute មិនត្រឹមត្រូវ។',
+    'uuid' => 'ទិន្នន័យស្កេនមិនត្រឹមត្រូវ។ សូមស្កេន QR ម្តងទៀត។',
+    'exists' => ':attribute ដែលបានជ្រើសមិនមានទេ។',
+    'in' => ':attribute ដែលបានជ្រើសមិនត្រឹមត្រូវ។',
+    'email' => 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ។',
+    'unique' => ':attribute នេះមានអ្នកប្រើរួចហើយ។ សូមប្រើតម្លៃផ្សេង។',
+    'digits' => ':attribute ត្រូវមាន :digits ខ្ទង់។',
+    'min' => ['numeric' => ':attribute ត្រូវមានតម្លៃយ៉ាងតិច :min។', 'string' => ':attribute ត្រូវមានយ៉ាងតិច :min តួអក្សរ។', 'file' => ':attribute ត្រូវមានទំហំយ៉ាងតិច :min KB។'],
+    'max' => ['numeric' => ':attribute មិនអាចលើស :max។', 'string' => ':attribute មិនអាចលើស :max តួអក្សរ។', 'file' => ':attribute មិនអាចលើស :max KB។'],
+    'between' => ['numeric' => ':attribute ត្រូវនៅចន្លោះ :min និង :max។'],
+    'attributes' => [
+        'phone' => 'លេខទូរស័ព្ទ', 'photo' => 'រូបគណនី', 'month' => 'ខែ', 'status' => 'ស្ថានភាព', 'page' => 'លេខទំព័រ',
+        'work_summary' => 'សង្ខេបការងារ', 'latitude' => 'រយៈទទឹង GPS', 'longitude' => 'រយៈបណ្ដោយ GPS',
+        'location_accuracy' => 'ភាពត្រឹមត្រូវ GPS', 'location_captured_at' => 'ពេលវេលាយកទីតាំង',
+        'attendance_type' => 'ប្រភេទវត្តមាន', 'attendance_point_id' => 'ទីតាំងការងារ',
+        'identifier' => 'ឈ្មោះពេញ ឬអ៊ីមែល', 'password' => 'ពាក្យសម្ងាត់ ឬ PIN', 'pin' => 'លេខ PIN',
+        'full_name' => 'ឈ្មោះពេញ', 'email' => 'អ៊ីមែល',
+    ],
+];
