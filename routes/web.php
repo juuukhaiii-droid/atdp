@@ -50,6 +50,8 @@ Route::middleware(['auth', 'role:admin'])
             ->name('employees.attendance.update');
         Route::delete('/employees/{employee}/attendance', [App\Http\Controllers\Admin\EmployeeController::class, 'destroyAttendance'])
             ->name('employees.attendance.destroy');
+        Route::put('/employees/{employee}/rest-days', [App\Http\Controllers\Admin\EmployeeController::class, 'updateRestDays'])
+            ->name('employees.rest-days.update');
 
         // Departments
         Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class)->except('show');

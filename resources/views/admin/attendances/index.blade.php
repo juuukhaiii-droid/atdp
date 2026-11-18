@@ -29,6 +29,7 @@
                     <label class="block font-semibold text-sm mb-1.5">Status</label>
                     <select name="status" class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
                         <option value="">All</option>
+                        <option value="day_off" @selected(request('status') === 'day_off')>ថ្ងៃឈប់</option>
                         <option value="present" {{ request('status') == 'present' ? 'selected' : '' }}>Present</option>
                         <option value="late" {{ request('status') == 'late' ? 'selected' : '' }}>Late</option>
                         <option value="absent" {{ request('status') == 'absent' ? 'selected' : '' }}>Absent</option>
@@ -98,7 +99,9 @@
                                 @endif
                             </td>
                             <td class="px-3.5 py-4 border-b border-slate-100">
-                                @if ($record->status === 'present')
+                                @if ($record->status === 'day_off')
+                                    <span style="color:#2563eb;background:#eff6ff;padding:5px 12px;border-radius:15px;">ថ្ងៃឈប់</span>
+                                @elseif ($record->status === 'present')
                                     <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
                                 @elseif ($record->status === 'late')
                                     <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>

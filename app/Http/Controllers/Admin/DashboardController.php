@@ -24,7 +24,7 @@ class DashboardController extends Controller
 
         $lateToday = $activeSummaries->where('status', 'late')->count();
 
-        $absentToday = max($totalEmployees - $presentToday, 0);
+        $absentToday = max($totalEmployees - $presentToday - $activeSummaries->where('status', 'day_off')->count(), 0);
 
         $todayRecords = $daySummaries;
 

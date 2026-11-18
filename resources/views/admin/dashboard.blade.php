@@ -53,7 +53,7 @@
             <div class="panel-heading"><div><h2 id="attendance-title">បញ្ជីវត្តមានបុគ្គលិក <span class="count-pill">{{ $todayRecords->count() }}</span></h2><p>Attendance records · {{ $selectedCarbon->format('d M Y') }}</p></div><a href="{{ route('admin.attendance.history', ['date' => $selectedDate]) }}" class="text-link">របាយការណ៍ <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div>
             <div class="table-toolbar">
                 <div class="status-tabs" role="group" aria-label="Filter attendance status">
-                    @foreach(['all' => 'ទាំងអស់', 'present' => 'ទាន់ម៉ោង', 'late' => 'មកយឺត'] as $value => $label)
+                    @foreach(['day_off' => __('employee.day_off'), 'all' => 'ទាំងអស់', 'present' => 'ទាន់ម៉ោង', 'late' => 'មកយឺត'] as $value => $label)
                         <button type="button" @click="status = '{{ $value }}'" :class="{ 'active': status === '{{ $value }}' }" :aria-pressed="status === '{{ $value }}'">{{ $label }}</button>
                     @endforeach
                 </div>
@@ -72,7 +72,7 @@
                                 <td>{{ $record->employee->department->name ?? '—' }}</td>
                                 <td class="time-cell">{{ $record->check_in_time ? \Illuminate\Support\Carbon::parse($record->check_in_time)->format('h:i A') : '—' }}</td>
                                 <td class="time-cell muted">{{ $record->check_out_time ? \Illuminate\Support\Carbon::parse($record->check_out_time)->format('h:i A') : '—' }}</td>
-                                <td><span class="attendance-badge {{ $record->status }}"><span></span>{{ $record->status === 'present' ? 'ទាន់ម៉ោង' : ($record->status === 'late' ? 'មកយឺត' : 'អវត្តមាន') }}</span>@if($record->late_minutes > 0)<small class="late-duration">+{{ $record->late_minutes }} min</small>@endif</td>
+                                <td><span class="attendance-badge {{ $record->status }}"><span></span>{{ $record->status === 'present' ? 'ទាន់ម៉ោង' : ($record->status === 'day_off' ? __('employee.day_off') : ($record->status === 'late' ? 'មកយឺត' : 'អវត្តមាន')) }}</span>@if($record->late_minutes > 0)<small class="late-duration">+{{ $record->late_minutes }} min</small>@endif</td>
                                 <td><a class="row-link" href="{{ route('admin.attendances.show', ['employee' => $record->employee_id, 'date' => $record->attendance_date]) }}" aria-label="View attendance for {{ $record->employee->full_name }}"><i class="fas fa-chevron-right" aria-hidden="true"></i></a></td>
                             </tr>
                         @endforeach

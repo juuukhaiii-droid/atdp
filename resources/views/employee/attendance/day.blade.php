@@ -1,6 +1,6 @@
 <div class="activity-row" style="border-bottom:1px solid var(--border-soft);padding:16px;">
     <div style="flex:1;min-width:0;">
-        <div class="activity-title">{{ \Carbon\Carbon::parse($record->attendance_date)->format('d/m/Y') }} · {{ ['present' => 'មានវត្តមាន', 'late' => 'មកយឺត', 'absent' => 'អវត្តមាន'][$record->status] ?? $record->status }}</div>
+        <div class="activity-title">{{ \Carbon\Carbon::parse($record->attendance_date)->format('d/m/Y') }} · {{ ['present' => 'មានវត្តមាន', 'late' => 'មកយឺត', 'absent' => 'អវត្តមាន', 'day_off' => 'ថ្ងៃឈប់'][$record->status] ?? $record->status }}</div>
         <div class="activity-sub">{{ $record->attendancePoint?->name ?? 'មិនបានកំណត់ទីតាំង' }}</div>
         <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px;font-size:14px;">
             <span>ចូល៖ <strong>{{ $record->check_in_time ? substr($record->check_in_time, 0, 5) : '--:--' }}</strong></span>

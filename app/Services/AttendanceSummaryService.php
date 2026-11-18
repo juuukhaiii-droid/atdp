@@ -26,6 +26,23 @@ class AttendanceSummaryService
             $merged->put($override->id, $override);
         }
 
+        $restDays = \App\Models\EmployeeRestDay::with(['employee.department', 'employee.shift'])
+            ->when(!empty($filters['employee_id']), fn ($query) => $query->where('employee_id', $filters['employee_id']))
+            ->get();
+        foreach ($restDays as $restDay) {
+            $date = $restDay->rest_date->toDateString();
+            if (!$restDay->employee || !$this->matchesDateFilters($date, $filters)) continue;
+            $id = $restDay->employee_id . '|' . $date;
+            // Working on a scheduled rest day remains real attendance.
+            if ($merged->get($id)?->check_in_time) continue;
+            $merged->put($id, (object) [
+                'id' => $id, 'employee_id' => $restDay->employee_id, 'employee' => $restDay->employee,
+                'attendance_date' => $date, 'check_in_time' => null, 'check_out_time' => null,
+                'attendancePoint' => null, 'status' => 'day_off', 'late_minutes' => 0,
+                'note' => 'ថ្ងៃឈប់តាមកាលវិភាគ', 'is_override' => false, 'created_at' => $restDay->rest_date,
+            ]);
+        }
+
         $summaries = $merged->values();
 
         if (!empty($filters['status'])) {

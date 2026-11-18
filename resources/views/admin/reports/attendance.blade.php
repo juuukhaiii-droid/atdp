@@ -116,7 +116,9 @@
                             <td class="px-3.5 py-4 border-b border-slate-100">{{ $record->check_out_time ?? '-' }}</td>
 
                             <td class="px-3.5 py-4 border-b border-slate-100">
-                                @if($record->status === 'late')
+                                @if($record->status === 'day_off')
+                                    <span style="color:#2563eb;background:#eff6ff;padding:5px 12px;border-radius:15px;">ថ្ងៃឈប់</span>
+                                @elseif($record->status === 'late')
                                     <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
                                 @elseif($record->status === 'present')
                                     <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>

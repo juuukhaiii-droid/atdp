@@ -39,8 +39,10 @@ class EmployeeDashboardController extends Controller
         $monthly = $summaries->filter(fn ($record) => str_starts_with($record->attendance_date, now()->format('Y-m')));
         $presentDays = $monthly->whereIn('status', ['present', 'late'])->count();
         $lateDays = $monthly->where('status', 'late')->count();
-        $monthlyDays = $monthly->count();
+        $monthlyDays = $monthly->where('status', '!=', 'day_off')->count();
+        $restDaysElapsed = $monthly->where('status', 'day_off')->filter(fn ($record) => $record->attendance_date <= now()->toDateString())->count();
         $todaySummary = $summaries->firstWhere('attendance_date', $workDate);
+        $isRestDay = $todaySummary?->status === 'day_off';
         if ($todaySummary?->is_override) {
             $todayIn = $todaySummary->check_in_time ? (object) ['scanned_at' => \Illuminate\Support\Carbon::parse($workDate . ' ' . $todaySummary->check_in_time)] : null;
             $todayOut = $todaySummary->check_out_time ? (object) ['scanned_at' => \Illuminate\Support\Carbon::parse($workDate . ' ' . $todaySummary->check_out_time)] : null;
@@ -50,7 +52,7 @@ class EmployeeDashboardController extends Controller
             $todayOut->scanned_at->addDay();
         }
 
-        $recentActivity = $summaries->take(5);
+        $recentActivity = $summaries->filter(fn ($record) => $record->attendance_date <= $workDate)->take(5);
 
         return view('employee.dashboard', compact(
             'employee',
@@ -59,6 +61,8 @@ class EmployeeDashboardController extends Controller
             'presentDays',
             'lateDays',
             'monthlyDays',
+            'restDaysElapsed',
+            'isRestDay',
             'recentActivity'
         ));
     }

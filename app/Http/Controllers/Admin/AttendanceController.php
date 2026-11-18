@@ -16,7 +16,7 @@ class AttendanceController extends Controller
         $filters = $request->only(['employee_id', 'status', 'date_from', 'date_to']);
         $request->validate([
             'employee_id' => ['nullable', 'integer', 'exists:employees,id'],
-            'status' => ['nullable', 'in:present,late,absent'],
+            'status' => ['nullable', 'in:present,late,absent,day_off'],
             'date_from' => ['nullable', 'date_format:Y-m-d'],
             'date_to' => ['nullable', 'date_format:Y-m-d', \Illuminate\Validation\Rule::when($request->filled('date_from'), 'after_or_equal:date_from')],
         ]);

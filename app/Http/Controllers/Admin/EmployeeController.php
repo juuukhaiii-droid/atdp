@@ -75,7 +75,7 @@ class EmployeeController extends Controller
 }
     public function show(Request $request, Employee $employee, AttendanceSummaryService $attendanceSummary)
     {
-        $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
+        $request->validate(['date' => ['nullable', 'date_format:Y-m-d'], 'month' => ['nullable', 'date_format:Y-m']]);
         $employee->load(['department', 'shift']);
 
         $filters = ['employee_id' => $employee->id];
@@ -88,12 +88,16 @@ class EmployeeController extends Controller
 
         $presentCount = $attendanceRecords->where('status', 'present')->count();
         $lateCount = $attendanceRecords->where('status', 'late')->count();
-        $totalAttendance = $attendanceRecords->count();
+        $totalAttendance = $attendanceRecords->where('status', '!=', 'day_off')->count();
 
         // Calendar follows the selected day's month, so picking a date both
         // filters the table to that day and lets you browse its month -
         // without needing separate Month/Year controls.
-        if ($request->filled('date')) {
+        if ($request->filled('month')) {
+            $selected = \Carbon\Carbon::parse($request->month . '-01');
+            $calendarYear = $selected->year;
+            $calendarMonth = $selected->month;
+        } elseif ($request->filled('date')) {
             $selected = \Carbon\Carbon::parse($request->date);
             $calendarYear = $selected->year;
             $calendarMonth = $selected->month;
@@ -114,6 +118,10 @@ class EmployeeController extends Controller
             });
 
         $attendancePoints = AttendancePoint::where('status', 'active')->orderBy('name')->get();
+        $restDates = $employee->restDays()->whereBetween('rest_date', [
+            sprintf('%04d-%02d-01', $calendarYear, $calendarMonth),
+            \Carbon\Carbon::create($calendarYear, $calendarMonth, 1)->endOfMonth()->toDateString(),
+        ])->pluck('rest_date')->map(fn ($date) => substr($date, 0, 10))->all();
 
         return view('admin.employees.show', compact(
             'employee',
@@ -125,7 +133,8 @@ class EmployeeController extends Controller
             'calendarYear',
             'daysInMonth',
             'monthlyAttendance',
-            'attendancePoints'
+            'attendancePoints',
+            'restDates'
         ));
     }
 
@@ -183,6 +192,30 @@ class EmployeeController extends Controller
         });
         return redirect()->route('admin.employees.show', ['employee' => $employee])
             ->with('success', 'Attendance deleted for ' . $validated['date'] . '.');
+    }
+
+    public function updateRestDays(Request $request, Employee $employee)
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+            'rest_days' => ['sometimes', 'array', 'max:31'],
+            'rest_days.*' => ['required', 'date_format:Y-m-d', 'distinct'],
+        ]);
+        $dates = $validated['rest_days'] ?? [];
+        foreach ($dates as $date) {
+            if (!str_starts_with($date, $validated['month'] . '-')) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['rest_days' => 'សូមជ្រើសថ្ងៃក្នុងខែដែលកំពុងកំណត់តែប៉ុណ្ណោះ។']);
+            }
+        }
+        $start = \Carbon\Carbon::parse($validated['month'] . '-01');
+        DB::transaction(function () use ($employee, $dates, $start) {
+            Employee::whereKey($employee->id)->lockForUpdate()->firstOrFail();
+            $employee->restDays()->whereBetween('rest_date', [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()])
+                ->whereNotIn('rest_date', $dates)->delete();
+            foreach ($dates as $date) $employee->restDays()->firstOrCreate(['rest_date' => $date]);
+        });
+        return redirect()->route('admin.employees.show', ['employee' => $employee, 'month' => $start->format('Y-m')])
+            ->with('success', 'បានរក្សាទុកថ្ងៃឈប់ប្រចាំខែ។');
     }
 
     public function edit(Employee $employee)

@@ -13,7 +13,7 @@
             $durationLabel = 'បានចូលនៅម៉ោង ' . $todayIn->scanned_at->format('H:i');
         }
 
-        $daysElapsed = min(now()->day, now()->daysInMonth);
+        $daysElapsed = max(0, min(now()->day, now()->daysInMonth) - ($restDaysElapsed ?? 0));
         $attendanceRate = $daysElapsed > 0 ? min(100, round(($presentDays / $daysElapsed) * 100)) : 0;
     @endphp
 
@@ -41,7 +41,9 @@
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-1">
                 <span class="section-eyebrow">វត្តមានថ្ងៃនេះ</span>
-                @if ($todayIn && !$todayOut)
+                @if ($isRestDay ?? false)
+                    <span class="status-pill status-pill-idle">ថ្ងៃឈប់</span>
+                @elseif ($todayIn && !$todayOut)
                     <span class="status-pill status-pill-in"><i class="fas fa-circle-dot me-1"></i>បានចូល</span>
                 @elseif ($todayIn && $todayOut)
                     <span class="status-pill status-pill-done"><i class="fas fa-check me-1"></i>បានចេញ</span>
@@ -52,6 +54,8 @@
 
             @if ($durationLabel)
                 <div class="status-duration">{{ $durationLabel }}</div>
+            @elseif ($isRestDay ?? false)
+                <div class="status-duration status-duration-muted">ថ្ងៃនេះជាថ្ងៃឈប់តាមកាលវិភាគរបស់អ្នក។</div>
             @else
                 <div class="status-duration status-duration-muted">អ្នកមិនទាន់បានចូលធ្វើការថ្ងៃនេះទេ</div>
             @endif

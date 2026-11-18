@@ -146,13 +146,25 @@
     <div class="rounded-brand-lg shadow-card bg-white mb-3 overflow-hidden">
         <div class="flex justify-between items-center px-5 py-4 border-b border-slate-200 font-bold">
             <span>Monthly Attendance Calendar</span>
-            <span class="text-ink-soft text-[13px] font-normal">
-                {{ \Carbon\Carbon::create($calendarYear, $calendarMonth, 1)->format('F Y') }}
-            </span>
+            <form method="GET" action="{{ route('admin.employees.show', $employee) }}" style="display:flex;gap:8px;font-size:13px;">
+                <input type="month" name="month" aria-label="ជ្រើសខែ" value="{{ sprintf('%04d-%02d', $calendarYear, $calendarMonth) }}" required style="border:1px solid #cbd5e1;border-radius:7px;padding:6px;">
+                <button type="submit" style="padding:6px 12px;border:1px solid #cbd5e1;border-radius:7px;">មើល</button>
+            </form>
         </div>
 
-        <div class="p-5">
+        <form method="POST" action="{{ route('admin.employees.rest-days.update', $employee) }}">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="month" value="{{ sprintf('%04d-%02d', $calendarYear, $calendarMonth) }}">
+        <div class="rest-days-toolbar"><span>ធីកថ្ងៃឈប់សម្រាប់ខែនេះ រួចចុចរក្សាទុក។</span><button type="submit">រក្សាទុកថ្ងៃឈប់</button></div>
+        <div class="p-5 attendance-calendar-scroll">
             <div class="attendance-calendar-grid">
+                @foreach(['ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍', 'អាទិត្យ'] as $weekday)
+                    <div class="attendance-calendar-weekday" lang="km">{{ $weekday }}</div>
+                @endforeach
+                @for($blank = 1; $blank < \Carbon\Carbon::create($calendarYear, $calendarMonth, 1)->dayOfWeekIso; $blank++)
+                    <div class="attendance-calendar-blank" aria-hidden="true"></div>
+                @endfor
                 @for($day = 1; $day <= $daysInMonth; $day++)
                     @php
                         $record = $monthlyAttendance[$day] ?? null;
@@ -162,9 +174,14 @@
                         $cardClass = 'absent';
                         $mark = '✗';
                         $label = 'Absent';
+                        if (!$isEditable) { $cardClass = 'pending-day'; $mark = '—'; $label = 'មិនទាន់ដល់ថ្ងៃ'; }
 
                         if ($record) {
-                            if ($record->status === 'late') {
+                            if ($record->status === 'day_off') {
+                                $cardClass = 'rest-day';
+                                $mark = '☀';
+                                $label = 'ថ្ងៃឈប់';
+                            } elseif ($record->status === 'late') {
                                 $cardClass = 'late-day';
                                 $mark = '!';
                                 $label = 'Late';
@@ -197,7 +214,6 @@
                             <i class="fas fa-note-sticky attendance-day-note-flag" title="{{ $record->note }}"></i>
                         @endif
 
-                        <div class="attendance-day-weekday" lang="km">{{ ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'][\Carbon\Carbon::parse($cellDate)->dayOfWeek] }}</div>
                         <div class="attendance-day-number">{{ $day }}</div>
 
                         <div class="attendance-day-mark">{{ $mark }}</div>
@@ -209,10 +225,12 @@
                                 {{ $record->check_in_time ? \Carbon\Carbon::parse($record->check_in_time)->format('H:i') : '-' }}
                             </div>
                         @endif
+                        <label class="rest-day-choice"><input type="checkbox" name="rest_days[]" value="{{ $cellDate }}" @checked(in_array($cellDate, (array) old('rest_days', $restDates)))> ថ្ងៃឈប់</label>
                     </div>
                 @endfor
             </div>
         </div>
+        </form>
     </div>
 
     <div class="rounded-brand-lg shadow-card bg-white overflow-hidden">
@@ -244,6 +262,8 @@
                             <td class="px-3.5 py-4 border-b border-slate-100">
                                 @if($record->status === 'late')
                                     <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-amber-100 text-amber-800">Late</span>
+                                @elseif($record->status === 'day_off')
+                                    <span class="rest-day-badge">ថ្ងៃឈប់</span>
                                 @elseif($record->status === 'present')
                                     <span class="inline-flex items-center justify-center min-w-[72px] px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-green-100 text-green-800">Present</span>
                                 @else
@@ -266,7 +286,7 @@
                             </td>
                             <td class="px-3.5 py-4 border-b border-slate-100 text-ink-soft text-[13px]">{{ $record->note ?: '-' }}</td>
                             <td class="px-3.5 py-4 border-b border-slate-100">
-                                @if ($record->attendance_date <= $today)
+                                @if ($record->attendance_date <= $today && $record->status !== 'day_off')
                                     @php
                                         $rowPayload = [
                                             'date' => $record->attendance_date,
@@ -359,14 +379,24 @@
 
 @push('styles')
 <style>
+    .rest-days-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 20px 0;font-size:12px;color:#64748b;flex-wrap:wrap}
+    .rest-days-toolbar button{padding:10px 15px;background:#b84129;color:white;border:0;border-radius:9px;font-weight:600;cursor:pointer}
+    .attendance-day-card.rest-day{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+    .attendance-day-card.pending-day{background:#f8fafc;border-color:#e2e8f0;color:#94a3b8}
+    .rest-day-choice{display:flex;justify-content:center;align-items:center;gap:5px;font-size:10px;margin-top:10px;color:#64748b;cursor:pointer}
+    .rest-day-choice input{width:14px;height:14px;accent-color:#2563eb}
+    .rest-day-badge{display:inline-block;background:#eff6ff;color:#2563eb;border-radius:15px;padding:5px 12px;font-size:12px;font-weight:600}
     .attendance-add-btn{background:#b84129;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer}
     .attendance-delete-form{display:inline-block;margin-left:8px}
     .attendance-delete-form button{border:1px solid #fecaca;border-radius:8px;background:#fff1f2;color:#b91c1c;padding:7px 10px;font-size:12px;cursor:pointer}
     .attendance-calendar-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: repeat(7, minmax(0, 1fr));
         gap: 10px;
+        min-width: 630px;
     }
+    .attendance-calendar-scroll { overflow-x: auto; }
+    .attendance-calendar-weekday { text-align: center; font-size: 13px; font-weight: 700; line-height: 1.8; color: #475569; padding: 5px 0 10px; }
 
     .attendance-day-card {
         position: relative;

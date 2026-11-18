@@ -25,6 +25,11 @@ class Employee extends Model
 
     protected $hidden = ['pin'];
 
+    public function restDays(): HasMany
+    {
+        return $this->hasMany(EmployeeRestDay::class);
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);

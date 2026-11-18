@@ -119,7 +119,7 @@ class EmployeeAttendanceController extends Controller
         $this->requireActiveEmployee($request);
         $request->validate([
             'month' => ['nullable', 'date_format:Y-m'],
-            'status' => ['nullable', 'in:present,late,absent'],
+            'status' => ['nullable', 'in:present,late,absent,day_off'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
         $month = $request->input('month') ?: now()->format('Y-m');
