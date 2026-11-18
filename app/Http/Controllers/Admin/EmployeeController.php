@@ -178,7 +178,7 @@ class EmployeeController extends Controller
             $events->delete();
             $overrides->delete();
         });
-        return redirect()->route('admin.employees.show', ['employee' => $employee, 'date' => $validated['date']])
+        return redirect()->route('admin.employees.show', ['employee' => $employee])
             ->with('success', 'Attendance deleted for ' . $validated['date'] . '.');
     }
 

@@ -151,6 +151,14 @@ class AttendanceLocationTest extends TestCase
         $this->assertNull(app(\App\Services\AttendanceSummaryService::class)->forEmployeeOnDate($this->employeeUser->employee->id, today()->toDateString()));
     }
 
+    public function test_qr_checkout_shows_work_summary_and_waits_for_employee_submission(): void
+    {
+        $this->actingAs($this->employeeUser)->post(route('attendance.submit', $this->point->qr_token), $this->coordinates());
+        $this->get(route('attendance.show', $this->point->qr_token))->assertOk()
+            ->assertSee('name="work_summary"', false)
+            ->assertSee('data-auto-start="false"', false);
+    }
+
     public function test_check_out_requires_a_new_location_and_saves_work_summary(): void
     {
         $this->actingAs($this->employeeUser)->post(route('employee.attendance.checkin'), $this->coordinates());
@@ -441,7 +449,7 @@ class AttendanceLocationTest extends TestCase
     {
         $this->actingAs($this->employeeUser)->post(route('attendance.submit', $this->point->qr_token), $this->coordinates());
         $this->get(route('employee.attendance.success'))->assertOk()
-            ->assertSee("You're checked in!")->assertSee('Shop')->assertSee('Attendance saved')
+            ->assertSee('ចូលធ្វើការជោគជ័យ')->assertSee('Shop')->assertSee('Attendance saved')
             ->assertDontSee('admin-sidebar');
     }
 

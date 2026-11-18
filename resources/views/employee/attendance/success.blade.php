@@ -1,14 +1,29 @@
 @extends('layouts.employee-app')
 @section('title', 'Attendance saved')
 @section('content')
-<section class="attendance-success">
-    <ol class="attendance-steps" aria-label="Attendance progress"><li class="complete"><span>1</span>QR scanned</li><li class="complete"><span>2</span>GPS checked</li><li class="complete" aria-current="step"><span>3</span>Done</li></ol>
-    <div class="attendance-success-mark" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg></div>
-    <h1>{{ $result['type'] === 'in' ? "You're checked in!" : "You're checked out!" }}</h1>
-    <p>{{ $result['type'] === 'in' ? 'Have a great shift.' : 'Thank you for your work today.' }}</p>
-    <div class="attendance-place"><strong class="attendance-place-name">{{ $result['name'] }}</strong>@if(!empty($result['checkpoint']))<span>{{ $result['checkpoint'] }}</span>@endif<time>{{ $result['time'] }}</time><span class="attendance-saved-badge">Attendance saved</span></div>
-    <a href="{{ route('employee.dashboard') }}" class="attendance-home-button">Done - Go home</a>
-    <a href="{{ route('employee.attendance.history') }}" class="attendance-history-link">View attendance history</a>
+@php
+    $checkedIn = $result['type'] === 'in';
+    $savedAt = \Illuminate\Support\Carbon::parse($result['time']);
+@endphp
+<section class="attendance-success attendance-receipt" aria-labelledby="attendance-success-title">
+    <div class="receipt-check" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div>
+    <h1 id="attendance-success-title">{{ $checkedIn ? 'ចូលធ្វើការជោគជ័យ' : 'ចេញពីធ្វើការជោគជ័យ' }}</h1>
+    <p class="receipt-confirmation" role="status">វត្តមានរបស់អ្នកបានកត់ត្រារួចរាល់</p>
+    <div class="receipt-card">
+        <span class="receipt-type {{ $checkedIn ? '' : 'is-out' }}">{{ $checkedIn ? 'CHECK IN' : 'CHECK OUT' }}</span>
+        <time class="receipt-time" datetime="{{ $savedAt->toIso8601String() }}">{{ $savedAt->format('H:i') }}<span>:{{ $savedAt->format('s') }}</span></time>
+        <p class="receipt-date">{{ $savedAt->format('d / m / Y') }}</p>
+        <dl class="receipt-details">
+            <div><dt>បុគ្គលិក</dt><dd>{{ $result['name'] }}</dd></div>
+            @if(!empty($result['checkpoint']))<div><dt>ទីតាំង</dt><dd>{{ $result['checkpoint'] }}</dd></div>@endif
+        </dl>
+        <div class="receipt-saved"><span aria-hidden="true">✓</span> បានរក្សាទុក</div>
+    </div>
+    <a href="{{ route('employee.dashboard') }}" class="attendance-home-button">រួចរាល់</a>
+    <a href="{{ route('employee.attendance.history') }}" class="attendance-history-link">មើលប្រវត្តិវត្តមាន <span aria-hidden="true">↗</span></a>
 </section>
 @endsection
-@push('styles')<link rel="stylesheet" href="{{ asset('css/attendance-location.css') }}?v={{ filemtime(public_path('css/attendance-location.css')) }}">@endpush
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/attendance-location.css') }}?v={{ filemtime(public_path('css/attendance-location.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/attendance-success.css') }}?v={{ filemtime(public_path('css/attendance-success.css')) }}">
+@endpush

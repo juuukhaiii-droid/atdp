@@ -3,7 +3,8 @@
     $selectedPoint = $point ?? ($points->count() === 1 ? $points->first() : null);
     $configured = $point ? ($point->latitude !== null && $point->longitude !== null) : $points->isNotEmpty();
     $label = $type === 'in' ? 'Check In' : 'Check Out';
-    $autoRun = $auto && $configured && !$errors->any();
+    // Leave time to write a summary before checkout captures GPS and submits.
+    $autoRun = $auto && $type === 'in' && $configured && !$errors->any();
 @endphp
 <form method="POST" action="{{ $action }}" class="gps-attendance-form" data-location-attendance data-auto-start="{{ $autoRun ? 'true' : 'false' }}" data-scan-id="{{ $scanId }}" data-location-configured="{{ $configured ? 'true' : 'false' }}" data-location-accuracy-limit="{{ min(100, $selectedPoint?->radius_meters ?? 100) }}">
     @csrf
@@ -35,12 +36,11 @@
         <time datetime="{{ now()->toIso8601String() }}">{{ now()->format('D, d M Y') }} at {{ now()->format('h:i A') }}</time>
         @if($selectedPoint && $configured)<small>Be within {{ $selectedPoint->radius_meters }} m of this checkpoint.</small>@endif
     </div>
-    @if($type === 'out' && !$auto)
-        <details class="attendance-summary" @if(old('work_summary')) open @endif>
-            <summary>Add work summary <span>(optional)</span></summary>
-            <label for="work-summary" class="sr-only">Work summary</label>
-            <textarea id="work-summary" name="work_summary" rows="3" maxlength="2000" placeholder="What did you work on today?">{{ old('work_summary') }}</textarea>
-        </details>
+    @if($type === 'out')
+        <div class="attendance-summary">
+            <label for="work-summary" style="display:block;font-size:14px;font-weight:600;">ថ្ងៃនេះអ្នកបានធ្វើអ្វីខ្លះ? <span style="font-size:12px;font-weight:400;color:#66758a;">(មិនបង្ខំ)</span></label>
+            <textarea id="work-summary" name="work_summary" rows="3" maxlength="2000" placeholder="សរសេរសង្ខេបការងារថ្ងៃនេះ…">{{ old('work_summary') }}</textarea>
+        </div>
     @endif
     <div data-location-status role="status" aria-live="polite" class="attendance-status" data-state="{{ $autoRun ? 'busy' : ($configured ? 'ready' : 'error') }}">{{ $autoRun ? 'Please allow location access when asked.' : ($configured ? 'Tap ' . $label . ', then allow location when asked.' : 'GPS is not configured for this checkpoint. Please contact your administrator.') }}</div>
     <x-attendance-connection-help />
