@@ -32,6 +32,7 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
 {
+    $request->mergeIfMissing(['attendance_mode' => 'fixed']);
     $validated = $request->validate([
         'employee_code' => ['required', 'string', 'max:255', 'unique:employees,employee_code'],
         'full_name' => ['required', 'string', 'max:255'],
@@ -39,12 +40,14 @@ class EmployeeController extends Controller
         'email' => ['required', 'email', 'max:255', 'unique:users,email'],
         'pin' => ['required', 'digits:4'],
         'department_id' => ['required', 'exists:departments,id'],
-        'shift_id' => ['required', 'exists:shifts,id'],
+        'attendance_mode' => ['required', 'in:fixed,flexible'],
+        'shift_id' => ['nullable', 'required_if:attendance_mode,fixed', 'exists:shifts,id'],
         'position' => ['nullable', 'string', 'max:255'],
         'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         'status' => ['required', 'in:active,inactive'],
     ]);
 
+    if ($validated['attendance_mode'] === 'flexible') $validated['shift_id'] = null;
     DB::transaction(function () use ($request, $validated) {
 
         $user = User::create([
@@ -192,6 +195,7 @@ class EmployeeController extends Controller
 
   public function update(Request $request, Employee $employee)
 {
+    $request->mergeIfMissing(['attendance_mode' => $employee->attendance_mode ?? 'fixed']);
     $validated = $request->validate([
         'employee_code' => ['required', 'string', 'max:255', 'unique:employees,employee_code,' . $employee->id],
         'full_name' => ['required', 'string', 'max:255'],
@@ -203,12 +207,14 @@ class EmployeeController extends Controller
         ],
         'pin' => ['nullable', 'digits:4'],
         'department_id' => ['required', 'exists:departments,id'],
-        'shift_id' => ['required', 'exists:shifts,id'],
+        'attendance_mode' => ['required', 'in:fixed,flexible'],
+        'shift_id' => ['nullable', 'required_if:attendance_mode,fixed', 'exists:shifts,id'],
         'position' => ['nullable', 'string', 'max:255'],
         'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
         'status' => ['required', 'in:active,inactive'],
     ]);
 
+    if ($validated['attendance_mode'] === 'flexible') $validated['shift_id'] = null;
     if (!empty($validated['pin'])) {
         $validated['pin'] = bcrypt($validated['pin']);
     } else {

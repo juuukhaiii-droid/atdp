@@ -66,7 +66,7 @@
 
                         <div>
                             <div class="text-ink-soft text-[11.5px] mb-0.5">Shift</div>
-                            <div class="font-semibold">{{ $employee->shift->name ?? '-' }}</div>
+                            <div class="font-semibold">{{ $employee->attendance_mode === 'flexible' ? 'ម៉ោងបត់បែន' : ($employee->shift->name ?? '-') }}</div>
                         </div>
 
                         <div>

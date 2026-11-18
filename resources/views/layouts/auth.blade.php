@@ -24,22 +24,22 @@
                 <span><strong>PizzaHappyFamily<span class="brand-dot">.</span></strong><small>
                         ATTENDANCE</small></span>
             </a>
-            <div class="auth-brand-body">
-                <div class="brand-eyebrow"><span></span> ចាប់ផ្ដើមថ្ងៃថ្មីជាមួយគ្នា</div>
-                <h2>ក្រុមការងារយើង។<br>ពេលវេលាយើង។<br><em>រីករាយជាមួយគ្នា។</em></h2>
-                <p class="auth-brand-desc">កត់ត្រាវត្តមានងាយៗ<br>សម្រាប់ក្រុមគ្រួសាររបស់យើង។</p>
+            <div class="auth-brand-body" lang="en">
+                <div class="brand-eyebrow"><span></span> A GOOD DAY STARTS HERE</div>
+                <h2 class="auth-khmer-headline" lang="km">វត្តមានប្រចាំថ្ងៃ<br>សម្រាប់<br><em>ភីហ្សាគ្រួសាររីករាយ</em></h2>
+                <p class="auth-brand-desc">A little less paperwork.<br>More time for what matters.</p>
                 <div class="attendance-illustration"
                     aria-label="Scan your QR, verify your location, and start your day">
-                    <div class="illustration-top"><span class="illustration-label">វត្តមានប្រចាំថ្ងៃ</span><span
+                    <div class="illustration-top"><span class="illustration-label">YOUR DAILY ROUTINE</span><span
                             class="illustration-dots" aria-hidden="true">•••</span></div>
                     <div class="routine-main">
                         <div class="routine-qr" aria-hidden="true"><x-auth-icon name="qr" /><span></span></div>
-                        <div><strong>ស្កេនមួយដង។<br>រួចរាល់។</strong>
-                            <p>ងាយស្រួលគ្រប់វេនការងារ។</p>
+                        <div><strong>One scan.<br>You're ready.</strong>
+                            <p>Simple from the first shift.</p>
                         </div>
                     </div>
-                    <div class="routine-steps"><span><b>01</b> ស្កេន QR</span><i aria-hidden="true">→</i><span><b>02</b>
-                            ពិនិត្យទីតាំង</span><i aria-hidden="true">→</i><span><b>03</b> រួចរាល់</span></div>
+                    <div class="routine-steps"><span><b>01</b> Scan QR</span><i aria-hidden="true">→</i><span><b>02</b>
+                            GPS check</span><i aria-hidden="true">→</i><span><b>03</b> Done</span></div>
                 </div>
                 <p class="brand-location-note"><x-auth-icon name="location" /> Location checked only when you clock in
                     or out.</p>

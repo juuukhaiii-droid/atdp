@@ -66,17 +66,7 @@
                             </select>
                         </div>
 
-                        <div class="md:col-span-4">
-                            <label class="block font-semibold text-sm mb-1.5" for="admin-field-shift_id-7">Shift</label>
-                            <select id="admin-field-shift_id-7" name="shift_id" required
-                                class="w-full border border-slate-200 rounded-[10px] px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-4 focus:ring-red-600/10">
-                                @foreach($shifts as $shift)
-                                    <option value="{{ $shift->id }}" {{ $employee->shift_id == $shift->id ? 'selected' : '' }}>
-                                        {{ $shift->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+                        @include('admin.employees.attendance-mode')
 
                         <div class="md:col-span-6">
                             <label class="block font-semibold text-sm mb-1.5" for="admin-field-position-8">Position</label>

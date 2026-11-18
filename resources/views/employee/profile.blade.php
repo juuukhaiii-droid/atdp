@@ -99,10 +99,15 @@
                     <i class="fas fa-user-clock profile-row-icon"></i>
                     <div>
                         <div class="info-label">វេនការងារ</div>
-                        <div class="info-value">{{ $employee->shift->name ?? 'មិនទាន់កំណត់' }}</div>
+                        <div class="info-value">{{ $employee->attendance_mode === 'flexible' ? 'ម៉ោងបត់បែន' : ($employee->shift->name ?? 'មិនទាន់កំណត់') }}</div>
                     </div>
                 </div>
-                @if ($employee->shift)
+                @if ($employee->attendance_mode === 'flexible')
+                    <div class="profile-row profile-row-border-top">
+                        <i class="fas fa-clock profile-row-icon" aria-hidden="true"></i>
+                        <div><div class="info-label">ម៉ោងធ្វើការ</div><div class="info-value">មិនកំណត់ម៉ោងថេរ</div></div>
+                    </div>
+                @elseif ($employee->shift)
                     <div class="profile-row profile-row-border-top">
                         <i class="fas fa-clock profile-row-icon"></i>
                         <div>

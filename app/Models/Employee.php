@@ -16,6 +16,7 @@ class Employee extends Model
         'pin',
         'department_id',
         'shift_id',
+        'attendance_mode',
         'position',
         'photo',
         'status',

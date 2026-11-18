@@ -176,8 +176,8 @@ class AttendanceSummaryService
                     'check_in_time' => $record->check_in_time,
                     'check_out_time' => $record->check_out_time,
                     'attendancePoint' => $record->attendancePoint,
-                    'status' => $record->status,
-                    'late_minutes' => $record->late_minutes,
+                    'status' => $record->employee->attendance_mode === 'flexible' ? ($record->check_in_time ? 'present' : 'absent') : $record->status,
+                    'late_minutes' => $record->employee->attendance_mode === 'flexible' ? 0 : $record->late_minutes,
                     'note' => $record->note,
                     'is_override' => true,
                     'created_at' => Carbon::parse($record->attendance_date . ' ' . ($record->check_in_time ?? '00:00:00')),
@@ -194,6 +194,7 @@ class AttendanceSummaryService
         if (!$checkInAt) {
             return ['absent', 0];
         }
+        if ($employee->attendance_mode === 'flexible') return ['present', 0];
 
         $lateAfter = $employee->shift?->late_after;
 

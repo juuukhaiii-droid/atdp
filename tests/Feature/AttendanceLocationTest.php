@@ -204,6 +204,32 @@ class AttendanceLocationTest extends TestCase
         $this->actingAs($admin)->patch(route('employee.profile.update'), ['phone' => '012345678'])->assertForbidden();
     }
 
+    public function test_admin_can_create_flexible_employee_without_shift_and_fixed_requires_shift(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $data = ['employee_code' => 'FLEX-01', 'full_name' => 'Flexible Employee', 'email' => 'flex@example.test',
+            'pin' => '2468', 'department_id' => $this->employeeUser->employee->department_id, 'status' => 'active', 'attendance_mode' => 'flexible'];
+        $this->actingAs($admin)->post(route('admin.employees.store'), $data)->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('employees', ['employee_code' => 'FLEX-01', 'attendance_mode' => 'flexible', 'shift_id' => null]);
+        $data = array_merge($data, ['employee_code' => 'FIXED-01', 'email' => 'fixed@example.test', 'attendance_mode' => 'fixed']);
+        $this->post(route('admin.employees.store'), $data)->assertSessionHasErrors('shift_id');
+    }
+
+    public function test_flexible_employee_never_late_in_raw_events_or_admin_corrections(): void
+    {
+        $employee = $this->employeeUser->employee;
+        $employee->update(['attendance_mode' => 'flexible', 'shift_id' => null]);
+        Attendance::create(['user_id' => $this->employeeUser->id, 'attendance_point_id' => $this->point->id,
+            'type' => 'in', 'scanned_at' => today()->setTime(15, 0), 'ip_address' => '127.0.0.1']);
+        $service = app(\App\Services\AttendanceSummaryService::class);
+        $record = $service->forEmployeeOnDate($employee->id, today()->toDateString());
+        $this->assertSame('present', $record->status);
+        $this->assertSame(0, $record->late_minutes);
+        $service->upsertOverride($employee->fresh(), today()->toDateString(), '15:00', '18:00', $this->point->id, null);
+        $this->assertSame(0, $service->forEmployeeOnDate($employee->id, today()->toDateString())->late_minutes);
+        $this->actingAs($this->employeeUser)->get(route('employee.profile'))->assertOk()->assertSee('ម៉ោងបត់បែន');
+    }
+
     public function test_check_out_requires_a_new_location_and_saves_work_summary(): void
     {
         $this->actingAs($this->employeeUser)->post(route('employee.attendance.checkin'), $this->coordinates());

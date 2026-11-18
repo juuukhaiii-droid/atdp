@@ -9,6 +9,7 @@ class AttendanceWorkday
 {
     private function cutoffSeconds(Employee $employee): int
     {
+        if ($employee->attendance_mode === 'flexible') return 0;
         $shift = $employee->shift;
         if (!$shift || $shift->end_time >= $shift->start_time) {
             return 0;

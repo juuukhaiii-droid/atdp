@@ -45,7 +45,7 @@
                                 </div>
                             </td>
                             <td class="px-3.5 py-4 border-b border-slate-100">{{ $employee->department->name ?? '-' }}</td>
-                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $employee->shift->name ?? '-' }}</td>
+                            <td class="px-3.5 py-4 border-b border-slate-100">{{ $employee->attendance_mode === 'flexible' ? 'ម៉ោងបត់បែន' : ($employee->shift->name ?? '-') }}</td>
                             <td class="px-3.5 py-4 border-b border-slate-100">{{ $employee->phone ?: '-' }}</td>
                             <td class="px-3.5 py-4 border-b border-slate-100">
                                 @if($employee->status === 'active')
